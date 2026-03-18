@@ -133,9 +133,110 @@ tbody tr:hover td{background:var(--bg3)}
   .main{padding:16px}
   .topbar .logo{font-size:24px}
 }
+
+  .auth-screen{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  background:rgba(15,15,16,0.98);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+.auth-card{
+  width:100%;
+  max-width:420px;
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:18px;
+  padding:30px;
+  box-shadow:0 20px 60px rgba(0,0,0,.35);
+}
+.auth-card h1{
+  font-size:28px;
+  font-weight:700;
+  margin-bottom:8px;
+  letter-spacing:-.03em;
+}
+.auth-card h1 span{color:var(--accent)}
+.auth-card p{
+  color:var(--text3);
+  font-size:13px;
+  margin-bottom:20px;
+}
+.auth-field{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-bottom:14px;
+}
+.auth-field label{
+  font-size:11px;
+  font-weight:600;
+  color:var(--text3);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.auth-field input{
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:12px 14px;
+  color:var(--text);
+  font-size:14px;
+  outline:none;
+  font-family:'DM Sans',sans-serif;
+}
+.auth-field input:focus{
+  border-color:var(--accent);
+}
+.auth-error{
+  min-height:18px;
+  color:var(--red);
+  font-size:12px;
+  margin-bottom:10px;
+}
+.auth-actions{
+  display:flex;
+  gap:10px;
+}
+.auth-btn{
+  width:100%;
+  background:var(--accent);
+  border:none;
+  border-radius:var(--radius);
+  padding:12px 16px;
+  color:#fff;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+}
+.auth-btn:hover{opacity:.9}
+.locked{
+  overflow:hidden;
+}
 </style>
 </head>
 <body>
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <h1>33<span>Studio</span></h1>
+    <p>Inserisci la password per accedere al pannello.</p>
+
+    <div class="auth-field">
+      <label>Password</label>
+      <input id="authPassword" type="password" placeholder="Inserisci password" autocomplete="current-password">
+    </div>
+
+    <div class="auth-error" id="authError"></div>
+
+    <div class="auth-actions">
+      <button type="button" class="auth-btn" onclick="checkAccess()">Accedi</button>
+    </div>
+  </div>
+</div>
 <div id="app">
   <div class="topbar">
     <a class="logo-link" href="index.html" title="Vai alla home page">
@@ -330,6 +431,57 @@ tbody tr:hover td{background:var(--bg3)}
 <div class="toast" id="toast"></div>
 
 <script>
+var ACCESS_PASSWORD = 'Ciaocia0!';
+var ACCESS_KEY = '33studio_access_ok';
+
+document.body.classList.add('locked');
+
+window.addEventListener('DOMContentLoaded', function() {
+  var ok = sessionStorage.getItem(ACCESS_KEY);
+  if (ok === 'true') {
+    unlockSite();
+  } else {
+    lockSite();
+  }
+});
+
+function lockSite() {
+  document.body.classList.add('locked');
+  var el = document.getElementById('authScreen');
+  if (el) el.style.display = 'flex';
+}
+
+function unlockSite() {
+  document.body.classList.remove('locked');
+  var el = document.getElementById('authScreen');
+  if (el) el.style.display = 'none';
+}
+
+function checkAccess() {
+  var input = document.getElementById('authPassword');
+  var err = document.getElementById('authError');
+  if (!input) return;
+
+  if (input.value === ACCESS_PASSWORD) {
+    sessionStorage.setItem(ACCESS_KEY, 'true');
+    err.textContent = '';
+    unlockSite();
+  } else {
+    err.textContent = 'Password errata';
+    input.value = '';
+    input.focus();
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  var screen = document.getElementById('authScreen');
+  if (!screen || screen.style.display === 'none') return;
+
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    checkAccess();
+  }
+});
 var SBURL = 'https://oovqibecarfdoybzbqwt.supabase.co';
 var SBKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vdnFpYmVjYXJmZG95YnpicXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjU1MDQsImV4cCI6MjA4NzM0MTUwNH0.yym_Y9i6Pl-dxicCxPXnWVg6E69RLYpyKBw7AWzq4wI';
 var TP = 'products';
