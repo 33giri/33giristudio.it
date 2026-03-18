@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>33Studio</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -133,8 +134,7 @@ tbody tr:hover td{background:var(--bg3)}
   .main{padding:16px}
   .topbar .logo{font-size:24px}
 }
-
-  .auth-screen{
+.auth-screen{
   position:fixed;
   inset:0;
   z-index:9999;
@@ -223,7 +223,12 @@ tbody tr:hover td{background:var(--bg3)}
 <div class="auth-screen" id="authScreen">
   <div class="auth-card">
     <h1>33<span>Studio</span></h1>
-    <p>Inserisci la password per accedere al pannello.</p>
+    <p>Accedi con l’account autorizzato.</p>
+
+    <div class="auth-field">
+      <label>Email</label>
+      <input id="authEmail" type="email" placeholder="33giristudios@gmail.com" autocomplete="username">
+    </div>
 
     <div class="auth-field">
       <label>Password</label>
@@ -233,10 +238,11 @@ tbody tr:hover td{background:var(--bg3)}
     <div class="auth-error" id="authError"></div>
 
     <div class="auth-actions">
-      <button type="button" class="auth-btn" onclick="checkAccess()">Accedi</button>
+      <button type="button" class="auth-btn" onclick="loginStudio()">Accedi</button>
     </div>
   </div>
 </div>
+
 <div id="app">
   <div class="topbar">
     <a class="logo-link" href="index.html" title="Vai alla home page">
@@ -431,19 +437,55 @@ tbody tr:hover td{background:var(--bg3)}
 <div class="toast" id="toast"></div>
 
 <script>
-var ACCESS_PASSWORD = 'Ciaocia0!';
-var ACCESS_KEY = '33studio_access_ok';
+var SBURL = 'https://oovqibecarfdoybzbqwt.supabase.co';
+var SBKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vdnFpYmVjYXJmZG95YnpicXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjU1MDQsImV4cCI6MjA4NzM0MTUwNH0.yym_Y9i6Pl-dxicCxPXnWVg6E69RLYpyKBw7AWzq4wI';
+var TP = 'products';
+var ALLOWED_EMAIL = '33giristudios@gmail.com';
+
+var sbAuth = window.supabase.createClient(SBURL, SBKEY);
+var currentAccessToken = null;
+
+var avail = [];
+var sold = [];
+var mods = [];
+var cols = [];
+var charts = {};
 
 document.body.classList.add('locked');
 
-window.addEventListener('DOMContentLoaded', function() {
-  var ok = sessionStorage.getItem(ACCESS_KEY);
-  if (ok === 'true') {
-    unlockSite();
-  } else {
-    lockSite();
-  }
+window.addEventListener('DOMContentLoaded', async function() {
+  await initAuth();
 });
+
+async function initAuth() {
+  try {
+    var sessionRes = await sbAuth.auth.getSession();
+    var session = sessionRes && sessionRes.data ? sessionRes.data.session : null;
+
+    if (session && session.user && session.user.email === ALLOWED_EMAIL) {
+      currentAccessToken = session.access_token;
+      unlockSite();
+      await loadProds();
+    } else {
+      currentAccessToken = null;
+      lockSite();
+    }
+
+    sbAuth.auth.onAuthStateChange(async function(event, sessionNow) {
+      if (sessionNow && sessionNow.user && sessionNow.user.email === ALLOWED_EMAIL) {
+        currentAccessToken = sessionNow.access_token;
+        unlockSite();
+        await loadProds();
+      } else {
+        currentAccessToken = null;
+        lockSite();
+      }
+    });
+  } catch (err) {
+    lockSite();
+    toast('Errore auth: ' + err.message, 'err');
+  }
+}
 
 function lockSite() {
   document.body.classList.add('locked');
@@ -457,20 +499,31 @@ function unlockSite() {
   if (el) el.style.display = 'none';
 }
 
-function checkAccess() {
-  var input = document.getElementById('authPassword');
+async function loginStudio() {
+  var email = document.getElementById('authEmail').value.trim().toLowerCase();
+  var password = document.getElementById('authPassword').value;
   var err = document.getElementById('authError');
-  if (!input) return;
 
-  if (input.value === ACCESS_PASSWORD) {
-    sessionStorage.setItem(ACCESS_KEY, 'true');
-    err.textContent = '';
-    unlockSite();
-  } else {
-    err.textContent = 'Password errata';
-    input.value = '';
-    input.focus();
+  err.textContent = '';
+
+  if (email !== ALLOWED_EMAIL) {
+    err.textContent = 'Email non autorizzata';
+    return;
   }
+
+  var res = await sbAuth.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
+
+  if (res.error) {
+    err.textContent = 'Email o password errati';
+    return;
+  }
+
+  currentAccessToken = res.data && res.data.session ? res.data.session.access_token : null;
+  unlockSite();
+  await loadProds();
 }
 
 document.addEventListener('keydown', function(e) {
@@ -479,21 +532,19 @@ document.addEventListener('keydown', function(e) {
 
   if (e.key === 'Enter') {
     e.preventDefault();
-    checkAccess();
+    loginStudio();
   }
 });
-var SBURL = 'https://oovqibecarfdoybzbqwt.supabase.co';
-var SBKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vdnFpYmVjYXJmZG95YnpicXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjU1MDQsImV4cCI6MjA4NzM0MTUwNH0.yym_Y9i6Pl-dxicCxPXnWVg6E69RLYpyKBw7AWzq4wI';
-var TP = 'products';
 
 function api(table, qs) {
   return SBURL + '/rest/v1/' + table + (qs ? '?' + qs : '');
 }
 
 function hdr(extra) {
+  var bearer = currentAccessToken || SBKEY;
   var h = {
     'apikey': SBKEY,
-    'Authorization': 'Bearer ' + SBKEY,
+    'Authorization': 'Bearer ' + bearer,
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   };
@@ -539,20 +590,10 @@ async function DELETE_ROW(table, id) {
   return true;
 }
 
-var avail = [];
-var sold = [];
-var mods = [];
-var cols = [];
-var charts = {};
-
 function toMoney(v) {
   var n = Number(v || 0);
   return n.toLocaleString('it-IT', { style:'currency', currency:'EUR' });
 }
-
-window.addEventListener('DOMContentLoaded', function() {
-  loadProds();
-});
 
 function goTo(name, btn) {
   document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
@@ -739,8 +780,8 @@ function openSellModal(id) {
 
   document.getElementById('sellid').value = id;
   document.getElementById('selltitle').value = (prod.title || '') + (prod.artist ? ' — ' + prod.artist : '');
-  document.getElementById('sellprice').value = '';
-  document.getElementById('sellnote').value = '';
+  document.getElementById('sellprice').value = prod.sale_price || '';
+  document.getElementById('sellnote').value = prod.sale_note || '';
 
   var now = new Date();
   var isoLocal = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0,16);
