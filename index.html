@@ -419,6 +419,10 @@ function refreshSel() {
   fill(['fgp','fgv'], gns);
 }
 
+function jsq(s) {
+  return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
 function draw(type) {
   var tb = document.getElementById(type === 'v' ? 'tbv' : 'tbp');
   var list = filtered(type);
@@ -430,7 +434,7 @@ function draw(type) {
 
   var html = '';
   list.forEach(function(p) {
-    var pid = Number(p.id);
+    var pid = String(p.id);
     var img = p.image1
       ? '<img class="thumb" src="' + escapeAttr(p.image1) + '" alt="" onerror="this.style.display=\'none\'">'
       : '<div class="thumb-ph">&#127991;</div>';
@@ -452,11 +456,11 @@ function draw(type) {
 
     html += '<td>' +
       '<div class="row-actions">' +
-        '<button type="button" class="ib edit" title="Modifica" data-id="' + pid + '" data-act="edit">&#9998;&#65039;</button>' +
+        '<button type="button" class="ib edit" title="Modifica" onclick="editProd(\'' + jsq(pid) + '\')">&#9998;&#65039;</button>' +
         (type === 'p'
-          ? '<button type="button" class="ib sell" title="Segna venduto" data-id="' + pid + '" data-act="sell">&#128184;</button>'
-          : '<button type="button" class="ib back" title="Ripristina disponibile" data-id="' + pid + '" data-act="back">&#8617;&#65039;</button>') +
-        '<button type="button" class="ib del" title="Elimina definitivamente" data-id="' + pid + '" data-act="del">&#128465;&#65039;</button>' +
+          ? '<button type="button" class="ib sell" title="Segna venduto" onclick="sellProd(\'' + jsq(pid) + '\')">&#128184;</button>'
+          : '<button type="button" class="ib back" title="Ripristina disponibile" onclick="restoreProd(\'' + jsq(pid) + '\')">&#8617;&#65039;</button>') +
+        '<button type="button" class="ib del" title="Elimina definitivamente" onclick="delProd(\'' + jsq(pid) + '\')">&#128465;&#65039;</button>' +
       '</div>' +
     '</td></tr>';
   });
@@ -477,24 +481,6 @@ function e(s) {
 function escapeAttr(s) {
   return e(s);
 }
-
-document.addEventListener('click', function(ev) {
-  var btn = ev.target.closest('.ib');
-  if (!btn) return;
-
-  ev.preventDefault();
-  ev.stopPropagation();
-
-  var id = Number(btn.getAttribute('data-id'));
-  var act = btn.getAttribute('data-act');
-
-  if (!id || !act) return;
-
-  if (act === 'edit') editProd(id);
-  else if (act === 'sell') sellProd(id);
-  else if (act === 'back') restoreProd(id);
-  else if (act === 'del') delProd(id);
-});
 
 async function sellProd(id) {
   if (!confirm('Segnare come venduto? Verra aggiornato nel database.')) return;
@@ -556,7 +542,7 @@ document.getElementById('ov').addEventListener('click', function(ev){
 function editProd(id) {
   var p = null;
   avail.concat(sold).forEach(function(x) {
-    if (Number(x.id) === Number(id)) p = x;
+    if (String(x.id) === String(id)) p = x;
   });
   if (p) openModal(p);
 }
