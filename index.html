@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestione Catalogo</title>
+<title>33Studio</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -21,7 +21,9 @@
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
 #app{display:flex;height:100vh;flex-direction:column}
 .topbar{display:flex;align-items:center;gap:12px;padding:12px 24px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
-.topbar .logo{font-weight:600;font-size:16px;letter-spacing:-.01em}
+.logo-link{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
+.topbar .logo{font-weight:600;font-size:16px;letter-spacing:-.01em;cursor:pointer;transition:opacity .2s}
+.topbar .logo:hover{opacity:.85}
 .topbar .logo span{color:var(--accent)}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 6px #f6666660;transition:all .3s}
 .dot.on{background:var(--green);box-shadow:0 0 6px #3ecf8e60}
@@ -51,7 +53,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--bg2)}
 table{width:100%;border-collapse:collapse}
 th{text-align:left;padding:11px 16px;font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap}
-td{padding:11px 16px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);vertical-align:middle}
+td{padding:11px 16px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);vertical-align:middle;position:relative}
 tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:var(--bg3)}
 .pname{color:var(--text);font-weight:500}
@@ -59,10 +61,33 @@ tbody tr:hover td{background:var(--bg3)}
 .pill.genre{background:var(--bg4);color:var(--text2);border:1px solid var(--border)}
 .pill.model{background:var(--accentbg);color:var(--accent2);border:1px solid #7c6af730}
 .pill.sold{background:var(--redbg);color:var(--red);border:1px solid #f6666630}
-.thumb{width:36px;height:36px;border-radius:6px;object-fit:cover;border:1px solid var(--border)}
-.thumb-ph{width:36px;height:36px;border-radius:6px;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text3)}
-.row-actions{display:flex;gap:4px}
-.ib{background:none;border:none;cursor:pointer;color:var(--text3);padding:6px;border-radius:7px;transition:all .18s;font-size:14px;line-height:1}
+.thumb{width:36px;height:36px;border-radius:6px;object-fit:cover;border:1px solid var(--border);pointer-events:none}
+.thumb-ph{width:36px;height:36px;border-radius:6px;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text3);pointer-events:none}
+.row-actions{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  justify-content:flex-start;
+  position:relative;
+  z-index:5;
+  pointer-events:auto;
+}
+.ib{
+  appearance:none;
+  -webkit-appearance:none;
+  background:none;
+  border:none;
+  cursor:pointer;
+  color:var(--text3);
+  padding:8px;
+  border-radius:7px;
+  transition:all .18s;
+  font-size:16px;
+  line-height:1;
+  position:relative;
+  z-index:6;
+  pointer-events:auto;
+}
 .ib.edit:hover{color:var(--accent2);background:var(--accentbg)}
 .ib.sell:hover{color:var(--green);background:var(--greenbg)}
 .ib.back:hover{color:var(--amber);background:var(--amberbg)}
@@ -117,7 +142,9 @@ tbody tr:hover td{background:var(--bg3)}
 <body>
 <div id="app">
   <div class="topbar">
-    <div class="logo">Catalogo <span>Studio</span></div>
+    <a class="logo-link" href="index.html" title="Vai alla home page">
+      <div class="logo">33<span>Studio</span></div>
+    </a>
     <div class="dot" id="dot"></div>
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="goTo('prodotti',this)">Prodotti <span class="badge" id="btot">0</span></button>
@@ -132,8 +159,8 @@ tbody tr:hover td{background:var(--bg3)}
       <div class="hrow">
         <div><h2>Prodotti disponibili</h2><p>Aggiunge, modifica e segna venduto — aggiorna il database in tempo reale</p></div>
         <div class="actions">
-          <button class="btn" onclick="loadProds()">&#8635; Ricarica</button>
-          <button class="btn accent" onclick="openModal(null)">+ Nuovo prodotto</button>
+          <button type="button" class="btn" onclick="loadProds()">&#8635; Ricarica</button>
+          <button type="button" class="btn accent" onclick="openModal(null)">+ Nuovo prodotto</button>
         </div>
       </div>
       <div class="filters">
@@ -182,7 +209,7 @@ tbody tr:hover td{background:var(--bg3)}
     <div class="section" id="sec-statistiche">
       <div class="hrow">
         <div><h2>Statistiche</h2><p>Panoramica del catalogo</p></div>
-        <button class="btn" onclick="loadStats()">&#8635; Aggiorna</button>
+        <button type="button" class="btn" onclick="loadStats()">&#8635; Aggiorna</button>
       </div>
       <div class="sgrid">
         <div class="sc"><div class="lb">Disponibili</div><div class="vl" id="stot" style="color:var(--green)">-</div></div>
@@ -218,8 +245,8 @@ tbody tr:hover td{background:var(--bg3)}
       <div class="fi full"><label>Immagine 2 (URL)</label><input id="fimg2" placeholder="https://..."><div class="hint">URL immagine secondaria</div></div>
     </div>
     <div class="mfoot">
-      <button class="bcancel" onclick="closeModal()">Annulla</button>
-      <button class="bsave" id="bsv" onclick="saveProd()">Salva prodotto</button>
+      <button type="button" class="bcancel" onclick="closeModal()">Annulla</button>
+      <button type="button" class="bsave" id="bsv" onclick="saveProd()">Salva prodotto</button>
     </div>
   </div>
 </div>
@@ -229,11 +256,12 @@ tbody tr:hover td{background:var(--bg3)}
 <script>
 var SBURL = 'https://oovqibecarfdoybzbqwt.supabase.co';
 var SBKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vdnFpYmVjYXJmZG95YnpicXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjU1MDQsImV4cCI6MjA4NzM0MTUwNH0.yym_Y9i6Pl-dxicCxPXnWVg6E69RLYpyKBw7AWzq4wI';
-var TP    = 'products';
+var TP = 'products';
 
 function api(table, qs) {
   return SBURL + '/rest/v1/' + table + (qs ? '?' + qs : '');
 }
+
 function hdr(extra) {
   var h = {
     'apikey': SBKEY,
@@ -247,11 +275,13 @@ function hdr(extra) {
   }
   return h;
 }
+
 async function GET(table, qs) {
   var r = await fetch(api(table, qs || 'select=*'), { method:'GET', headers: hdr() });
   if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
+
 async function POST(table, body) {
   var r = await fetch(api(table), {
     method:'POST',
@@ -261,8 +291,9 @@ async function POST(table, body) {
   if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
+
 async function PATCH(table, id, body) {
-  var r = await fetch(api(table, 'id=eq.' + id), {
+  var r = await fetch(api(table, 'id=eq.' + encodeURIComponent(id)), {
     method:'PATCH',
     headers: hdr({'Prefer':'return=representation'}),
     body: JSON.stringify(body)
@@ -270,8 +301,9 @@ async function PATCH(table, id, body) {
   if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
-async function DELETE(table, id) {
-  var r = await fetch(api(table, 'id=eq.' + id), {
+
+async function DELETE_ROW(table, id) {
+  var r = await fetch(api(table, 'id=eq.' + encodeURIComponent(id)), {
     method:'DELETE',
     headers: hdr()
   });
@@ -301,7 +333,8 @@ function goTo(name, btn) {
 function uniqueValues(field) {
   var vals = [];
   avail.concat(sold).forEach(function(p) {
-    var v = (p[field] || '').trim();
+    var raw = p[field];
+    var v = raw === null || raw === undefined ? '' : String(raw).trim();
     if (v && vals.indexOf(v) === -1) vals.push(v);
   });
   vals.sort(function(a, b) { return a.localeCompare(b, 'it'); });
@@ -346,7 +379,7 @@ function filtered(type) {
   var q = (document.getElementById(type === 'v' ? 'sv' : 'sp').value || '').toLowerCase();
   if (q) {
     list = list.filter(function(p) {
-      return ((p.title || '') + (p.artist || '') + (p.place || '') + (p.genre || '') + (p.model || '') + (p.collection || '')).toLowerCase().indexOf(q) >= 0;
+      return ((p.title || '') + ' ' + (p.artist || '') + ' ' + (p.place || '') + ' ' + (p.genre || '') + ' ' + (p.model || '') + ' ' + (p.collection || '')).toLowerCase().indexOf(q) >= 0;
     });
   }
 
@@ -373,7 +406,7 @@ function refreshSel() {
       var first = el.options[0] ? el.options[0].outerHTML : '<option value="">Tutti</option>';
       var html = first;
       vals.forEach(function(v) {
-        html += '<option value="' + e(v) + '"' + (cur === v ? ' selected' : '') + '>' + e(v) + '</option>';
+        html += '<option value="' + escapeAttr(v) + '"' + (cur === v ? ' selected' : '') + '>' + e(v) + '</option>';
       });
       el.innerHTML = html;
     });
@@ -397,32 +430,35 @@ function draw(type) {
 
   var html = '';
   list.forEach(function(p) {
+    var pid = Number(p.id);
     var img = p.image1
-      ? '<img class="thumb" src="' + e(p.image1) + '" onerror="this.style.display=\'none\'">'
+      ? '<img class="thumb" src="' + escapeAttr(p.image1) + '" alt="" onerror="this.style.display=\'none\'">'
       : '<div class="thumb-ph">&#127991;</div>';
 
     html += '<tr>' +
       '<td>' + img + '</td>' +
       '<td><span class="pname">' + e(p.title) + '</span></td>' +
-      '<td>' + (e(p.artist) || '&mdash;') + '</td>' +
+      '<td>' + (p.artist ? e(p.artist) : '&mdash;') + '</td>' +
       '<td>' + (p.year || '&mdash;') + '</td>' +
       '<td>' + (p.genre ? '<span class="pill genre">' + e(p.genre) + '</span>' : '&mdash;') + '</td>' +
-      '<td>' + (e(p.place) || '&mdash;') + '</td>' +
+      '<td>' + (p.place ? e(p.place) : '&mdash;') + '</td>' +
       '<td>' + (p.model ? '<span class="pill model">' + e(p.model) + '</span>' : '&mdash;') + '</td>' +
-      '<td>' + (e(p.collection) || '&mdash;') + '</td>';
+      '<td>' + (p.collection ? e(p.collection) : '&mdash;') + '</td>';
 
     if (type === 'v') {
       var d = p.sold_at ? new Date(p.sold_at).toLocaleDateString('it-IT') : '&mdash;';
       html += '<td><span class="pill sold">' + d + '</span></td>';
     }
 
-    html += '<td><div class="row-actions">' +
-      '<button class="ib edit" title="Modifica" onclick="editProd(' + p.id + ')">&#9998;&#65039;</button>' +
-      (type === 'p'
-        ? '<button class="ib sell" title="Segna venduto" onclick="sellProd(' + p.id + ')">&#128184;</button>'
-        : '<button class="ib back" title="Ripristina disponibile" onclick="restoreProd(' + p.id + ')">&#8617;&#65039;</button>') +
-      '<button class="ib del" title="Elimina definitivamente" onclick="delProd(' + p.id + ')">&#128465;&#65039;</button>' +
-      '</div></td></tr>';
+    html += '<td>' +
+      '<div class="row-actions">' +
+        '<button type="button" class="ib edit" title="Modifica" data-id="' + pid + '" data-act="edit">&#9998;&#65039;</button>' +
+        (type === 'p'
+          ? '<button type="button" class="ib sell" title="Segna venduto" data-id="' + pid + '" data-act="sell">&#128184;</button>'
+          : '<button type="button" class="ib back" title="Ripristina disponibile" data-id="' + pid + '" data-act="back">&#8617;&#65039;</button>') +
+        '<button type="button" class="ib del" title="Elimina definitivamente" data-id="' + pid + '" data-act="del">&#128465;&#65039;</button>' +
+      '</div>' +
+    '</td></tr>';
   });
 
   tb.innerHTML = html;
@@ -434,8 +470,31 @@ function e(s) {
     .replace(/&/g,'&amp;')
     .replace(/</g,'&lt;')
     .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
 }
+
+function escapeAttr(s) {
+  return e(s);
+}
+
+document.addEventListener('click', function(ev) {
+  var btn = ev.target.closest('.ib');
+  if (!btn) return;
+
+  ev.preventDefault();
+  ev.stopPropagation();
+
+  var id = Number(btn.getAttribute('data-id'));
+  var act = btn.getAttribute('data-act');
+
+  if (!id || !act) return;
+
+  if (act === 'edit') editProd(id);
+  else if (act === 'sell') sellProd(id);
+  else if (act === 'back') restoreProd(id);
+  else if (act === 'del') delProd(id);
+});
 
 async function sellProd(id) {
   if (!confirm('Segnare come venduto? Verra aggiornato nel database.')) return;
@@ -462,7 +521,7 @@ async function restoreProd(id) {
 async function delProd(id) {
   if (!confirm('Eliminare definitivamente dal database?')) return;
   try {
-    await DELETE(TP, id);
+    await DELETE_ROW(TP, id);
     toast('Prodotto eliminato', 'ok');
     await loadProds();
   } catch(err) {
@@ -489,6 +548,7 @@ function openModal(prod) {
 function closeModal() {
   document.getElementById('ov').classList.remove('open');
 }
+
 document.getElementById('ov').addEventListener('click', function(ev){
   if (ev.target.id === 'ov') closeModal();
 });
@@ -496,7 +556,7 @@ document.getElementById('ov').addEventListener('click', function(ev){
 function editProd(id) {
   var p = null;
   avail.concat(sold).forEach(function(x) {
-    if (x.id === id) p = x;
+    if (Number(x.id) === Number(id)) p = x;
   });
   if (p) openModal(p);
 }
