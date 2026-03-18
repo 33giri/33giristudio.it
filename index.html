@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>33Studio</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -22,7 +22,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 #app{display:flex;height:100vh;flex-direction:column}
 .topbar{display:flex;align-items:center;gap:12px;padding:12px 24px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
 .logo-link{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
-.topbar .logo{font-weight:600;font-size:16px;letter-spacing:-.01em;cursor:pointer;transition:opacity .2s}
+.topbar .logo{font-weight:700;font-size:29px;letter-spacing:-.03em;cursor:pointer;transition:opacity .2s;line-height:1}
 .topbar .logo:hover{opacity:.85}
 .topbar .logo span{color:var(--accent)}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 6px #f6666660;transition:all .3s}
@@ -126,6 +126,13 @@ tbody tr:hover td{background:var(--bg3)}
 .li{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
 .li:last-child{border-bottom:none}
 .li span{font-size:13px;color:var(--text)}
+.sales-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:10px}
+.sales-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px}
+.sales-card h4{font-size:13px;font-weight:700;margin-bottom:16px;color:var(--text)}
+.sales-item{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--border)}
+.sales-item:last-child{border-bottom:none}
+.sales-item .name{color:var(--text2);font-size:13px}
+.sales-item .val{color:var(--text);font-weight:700;font-size:14px}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:13px 20px;font-size:13px;color:var(--text);z-index:999;transform:translateY(16px);opacity:0;transition:all .28s;max-width:340px;pointer-events:none}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.ok{border-left:3px solid var(--green)}
@@ -133,9 +140,10 @@ tbody tr:hover td{background:var(--bg3)}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:640px){
-  .fg,.crow,.lgrid{grid-template-columns:1fr}
+  .fg,.crow,.lgrid,.sales-grid{grid-template-columns:1fr}
   .nav-tab{padding:6px 10px;font-size:12px}
   .main{padding:16px}
+  .topbar .logo{font-size:24px}
 }
 </style>
 </head>
@@ -208,7 +216,7 @@ tbody tr:hover td{background:var(--bg3)}
 
     <div class="section" id="sec-statistiche">
       <div class="hrow">
-        <div><h2>Statistiche</h2><p>Panoramica del catalogo</p></div>
+        <div><h2>Statistiche</h2><p>Panoramica del catalogo e delle vendite</p></div>
         <button type="button" class="btn" onclick="loadStats()">&#8635; Aggiorna</button>
       </div>
       <div class="sgrid">
@@ -224,6 +232,29 @@ tbody tr:hover td{background:var(--bg3)}
       <div class="crow">
         <div class="cc"><h4>Per anno</h4><canvas id="cha"></canvas></div>
         <div class="cc"><h4>Per collezione</h4><canvas id="chc"></canvas></div>
+      </div>
+
+      <div class="hrow" style="margin-top:10px;margin-bottom:14px">
+        <div><h2 style="font-size:17px">Statistiche vendite</h2><p>Venduti per combinazione modello + collezione</p></div>
+      </div>
+
+      <div class="sales-grid">
+        <div class="sales-card">
+          <h4>Svuotatasche venduti</h4>
+          <div id="sales-svuotatasche"></div>
+        </div>
+        <div class="sales-card">
+          <h4>Posacenere venduti</h4>
+          <div id="sales-posacenere"></div>
+        </div>
+        <div class="sales-card">
+          <h4>Totali vendite per modello</h4>
+          <div id="sales-model-totals"></div>
+        </div>
+        <div class="sales-card">
+          <h4>Totali vendite per collezione</h4>
+          <div id="sales-collection-totals"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -255,7 +286,7 @@ tbody tr:hover td{background:var(--bg3)}
 
 <script>
 var SBURL = 'https://oovqibecarfdoybzbqwt.supabase.co';
-var SBKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vdnFpYmVjYXJmZG95YnpicXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjU1MDQsImV4cCI6MjA4NzM0MTUwNH0.yym_Y9i6Pl-dxicCxPXnWVg6E69RLYpyKBw7AWzq4wI';
+var SBKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmVzZSIsInJlZiI6Im9vdnFpYmVjYXJmZG95YnpicXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjU1MDQsImV4cCI6MjA4NzM0MTUwNH0.yym_Y9i6Pl-dxicCxPXnWVg6E69RLYpyKBw7AWzq4wI';
 var TP = 'products';
 
 function api(table, qs) {
@@ -607,6 +638,74 @@ function renderLists() {
   rend('lcol', cols, 'Nessuna collezione');
 }
 
+function normalizeLabel(v) {
+  return (v || '').toString().trim().toLowerCase();
+}
+
+function renderSalesList(targetId, items) {
+  var el = document.getElementById(targetId);
+  if (!el) return;
+
+  if (!items.length) {
+    el.innerHTML = '<div class="sales-item"><span class="name">Nessun dato</span><span class="val">0</span></div>';
+    return;
+  }
+
+  el.innerHTML = items.map(function(item){
+    return '<div class="sales-item"><span class="name">' + e(item.label) + '</span><span class="val">' + item.value + '</span></div>';
+  }).join('');
+}
+
+function countSoldBy(modelName, collectionName) {
+  var m = normalizeLabel(modelName);
+  var c = normalizeLabel(collectionName);
+  return sold.filter(function(p) {
+    return normalizeLabel(p.model) === m && normalizeLabel(p.collection) === c;
+  }).length;
+}
+
+function groupedCounts(data, field) {
+  var out = {};
+  data.forEach(function(p) {
+    var k = (p[field] || 'N/A').toString().trim() || 'N/A';
+    out[k] = (out[k] || 0) + 1;
+  });
+  return out;
+}
+
+function renderSalesStats() {
+  var targetCollections = ['standard', 'splash', 'spiral'];
+
+  var svuotatascheItems = targetCollections.map(function(col) {
+    return {
+      label: 'Svuotatasche ' + col.charAt(0).toUpperCase() + col.slice(1),
+      value: countSoldBy('svuotatasche', col)
+    };
+  });
+
+  var posacenereItems = targetCollections.map(function(col) {
+    return {
+      label: 'Posacenere ' + col.charAt(0).toUpperCase() + col.slice(1),
+      value: countSoldBy('posacenere', col)
+    };
+  });
+
+  var soldByModel = groupedCounts(sold, 'model');
+  var modelItems = Object.keys(soldByModel).sort(function(a,b){ return a.localeCompare(b, 'it'); }).map(function(k){
+    return { label: k, value: soldByModel[k] };
+  });
+
+  var soldByCollection = groupedCounts(sold, 'collection');
+  var collectionItems = Object.keys(soldByCollection).sort(function(a,b){ return a.localeCompare(b, 'it'); }).map(function(k){
+    return { label: k, value: soldByCollection[k] };
+  });
+
+  renderSalesList('sales-svuotatasche', svuotatascheItems);
+  renderSalesList('sales-posacenere', posacenereItems);
+  renderSalesList('sales-model-totals', modelItems);
+  renderSalesList('sales-collection-totals', collectionItems);
+}
+
 async function loadStats() {
   await loadProds();
 
@@ -619,6 +718,8 @@ async function loadStats() {
   drawD('chg', grp('genre', avail));
   drawB('cha', grp('year', avail));
   drawD('chc', grp('collection', avail));
+
+  renderSalesStats();
 }
 
 function grp(field, data) {
