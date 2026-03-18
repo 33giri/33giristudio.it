@@ -61,32 +61,14 @@ tbody tr:hover td{background:var(--bg3)}
 .pill.genre{background:var(--bg4);color:var(--text2);border:1px solid var(--border)}
 .pill.model{background:var(--accentbg);color:var(--accent2);border:1px solid #7c6af730}
 .pill.sold{background:var(--redbg);color:var(--red);border:1px solid #f6666630}
+.pill.price{background:var(--greenbg);color:var(--green);border:1px solid #3ecf8e30}
 .thumb{width:36px;height:36px;border-radius:6px;object-fit:cover;border:1px solid var(--border);pointer-events:none}
 .thumb-ph{width:36px;height:36px;border-radius:6px;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text3);pointer-events:none}
-.row-actions{
-  display:flex;
-  gap:6px;
-  align-items:center;
-  justify-content:flex-start;
-  position:relative;
-  z-index:5;
-  pointer-events:auto;
-}
+.row-actions{display:flex;gap:6px;align-items:center;justify-content:flex-start;position:relative;z-index:5;pointer-events:auto}
 .ib{
-  appearance:none;
-  -webkit-appearance:none;
-  background:none;
-  border:none;
-  cursor:pointer;
-  color:var(--text3);
-  padding:8px;
-  border-radius:7px;
-  transition:all .18s;
-  font-size:16px;
-  line-height:1;
-  position:relative;
-  z-index:6;
-  pointer-events:auto;
+  appearance:none;-webkit-appearance:none;background:none;border:none;cursor:pointer;
+  color:var(--text3);padding:8px;border-radius:7px;transition:all .18s;font-size:16px;
+  line-height:1;position:relative;z-index:6;pointer-events:auto
 }
 .ib.edit:hover{color:var(--accent2);background:var(--accentbg)}
 .ib.sell:hover{color:var(--green);background:var(--greenbg)}
@@ -102,8 +84,13 @@ tbody tr:hover td{background:var(--bg3)}
 .fi{display:flex;flex-direction:column;gap:6px}
 .fi.full{grid-column:1/-1}
 .fi label{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase}
-.fi input,.fi select{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 13px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s}
-.fi input:focus,.fi select:focus{border-color:var(--accent)}
+.fi input,.fi select,.fi textarea{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);
+  padding:10px 13px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;
+  outline:none;transition:border-color .2s
+}
+.fi textarea{resize:vertical;min-height:88px}
+.fi input:focus,.fi select:focus,.fi textarea:focus{border-color:var(--accent)}
 .fi select option{background:var(--bg3)}
 .fi .hint{font-size:11px;color:var(--text3);margin-top:2px}
 .mfoot{display:flex;gap:10px;margin-top:28px;justify-content:flex-end}
@@ -133,6 +120,7 @@ tbody tr:hover td{background:var(--bg3)}
 .sales-item:last-child{border-bottom:none}
 .sales-item .name{color:var(--text2);font-size:13px}
 .sales-item .val{color:var(--text);font-weight:700;font-size:14px}
+.note-cell{max-width:260px;white-space:normal;line-height:1.4}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:13px 20px;font-size:13px;color:var(--text);z-index:999;transform:translateY(16px);opacity:0;transition:all .28s;max-width:340px;pointer-events:none}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.ok{border-left:3px solid var(--green)}
@@ -186,7 +174,7 @@ tbody tr:hover td{background:var(--bg3)}
     </div>
 
     <div class="section" id="sec-venduti">
-      <div class="hrow"><div><h2>Prodotti venduti</h2><p>Segnati come venduti — sold_at aggiornato nel database</p></div></div>
+      <div class="hrow"><div><h2>Prodotti venduti</h2><p>Con prezzo e nota salvati nel database</p></div></div>
       <div class="filters">
         <input id="sv" type="search" placeholder="Cerca venduto..." oninput="draw('v')">
         <select id="fmv" onchange="draw('v')"><option value="">Tutti i modelli</option></select>
@@ -194,7 +182,7 @@ tbody tr:hover td{background:var(--bg3)}
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th></th><th>Titolo</th><th>Artista</th><th>Anno</th><th>Genere</th><th>Luogo</th><th>Modello</th><th>Collezione</th><th>Venduto il</th><th>Azioni</th></tr></thead>
+          <thead><tr><th></th><th>Titolo</th><th>Artista</th><th>Anno</th><th>Genere</th><th>Luogo</th><th>Modello</th><th>Collezione</th><th>Venduto il</th><th>Prezzo</th><th>Nota</th><th>Azioni</th></tr></thead>
           <tbody id="tbv"></tbody>
         </table>
       </div>
@@ -219,12 +207,21 @@ tbody tr:hover td{background:var(--bg3)}
         <div><h2>Statistiche</h2><p>Panoramica del catalogo e delle vendite</p></div>
         <button type="button" class="btn" onclick="loadStats()">&#8635; Aggiorna</button>
       </div>
+
       <div class="sgrid">
         <div class="sc"><div class="lb">Disponibili</div><div class="vl" id="stot" style="color:var(--green)">-</div></div>
         <div class="sc"><div class="lb">Venduti</div><div class="vl" id="ssold" style="color:var(--red)">-</div></div>
         <div class="sc"><div class="lb">Modelli</div><div class="vl" id="smods" style="color:var(--amber)">-</div></div>
         <div class="sc"><div class="lb">Collezioni</div><div class="vl" id="scols">-</div></div>
       </div>
+
+      <div class="sgrid">
+        <div class="sc"><div class="lb">Ricavi totali</div><div class="vl" id="rev-total" style="color:var(--green)">€ 0,00</div></div>
+        <div class="sc"><div class="lb">Media ricavo / vendita</div><div class="vl" id="rev-avg">€ 0,00</div></div>
+        <div class="sc"><div class="lb">Vendite con prezzo</div><div class="vl" id="rev-count" style="color:var(--amber)">0</div></div>
+        <div class="sc"><div class="lb">Note inserite</div><div class="vl" id="notes-count">0</div></div>
+      </div>
+
       <div class="crow">
         <div class="cc"><h4>Per modello</h4><canvas id="chm"></canvas></div>
         <div class="cc"><h4>Per genere</h4><canvas id="chg"></canvas></div>
@@ -235,7 +232,7 @@ tbody tr:hover td{background:var(--bg3)}
       </div>
 
       <div class="hrow" style="margin-top:10px;margin-bottom:14px">
-        <div><h2 style="font-size:17px">Statistiche vendite</h2><p>Venduti per combinazione modello + collezione</p></div>
+        <div><h2 style="font-size:17px">Statistiche vendite</h2><p>Venduti e ricavi per modello e collezione</p></div>
       </div>
 
       <div class="sales-grid">
@@ -254,6 +251,25 @@ tbody tr:hover td{background:var(--bg3)}
         <div class="sales-card">
           <h4>Totali vendite per collezione</h4>
           <div id="sales-collection-totals"></div>
+        </div>
+      </div>
+
+      <div class="sales-grid">
+        <div class="sales-card">
+          <h4>Ricavi per modello</h4>
+          <div id="revenue-model-totals"></div>
+        </div>
+        <div class="sales-card">
+          <h4>Ricavi per collezione</h4>
+          <div id="revenue-collection-totals"></div>
+        </div>
+        <div class="sales-card">
+          <h4>Ricavi modello + collezione</h4>
+          <div id="revenue-model-collection"></div>
+        </div>
+        <div class="sales-card">
+          <h4>Ricavi combinazioni principali</h4>
+          <div id="revenue-main-combos"></div>
         </div>
       </div>
     </div>
@@ -278,6 +294,35 @@ tbody tr:hover td{background:var(--bg3)}
     <div class="mfoot">
       <button type="button" class="bcancel" onclick="closeModal()">Annulla</button>
       <button type="button" class="bsave" id="bsv" onclick="saveProd()">Salva prodotto</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="sellov">
+  <div class="modal">
+    <h3>Registra vendita</h3>
+    <input type="hidden" id="sellid">
+    <div class="fg">
+      <div class="fi full">
+        <label>Prodotto</label>
+        <input id="selltitle" readonly>
+      </div>
+      <div class="fi">
+        <label>Prezzo di vendita *</label>
+        <input id="sellprice" type="number" step="0.01" min="0" placeholder="Es. 29.90">
+      </div>
+      <div class="fi">
+        <label>Data vendita</label>
+        <input id="selldate" type="datetime-local">
+      </div>
+      <div class="fi full">
+        <label>Nota</label>
+        <textarea id="sellnote" placeholder="Es. venduto al mercatino, sconto applicato, pagamento contanti..."></textarea>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button type="button" class="bcancel" onclick="closeSellModal()">Annulla</button>
+      <button type="button" class="bsave" id="bsellsave" onclick="confirmSell()">Conferma vendita</button>
     </div>
   </div>
 </div>
@@ -348,6 +393,11 @@ var mods = [];
 var cols = [];
 var charts = {};
 
+function toMoney(v) {
+  var n = Number(v || 0);
+  return n.toLocaleString('it-IT', { style:'currency', currency:'EUR' });
+}
+
 window.addEventListener('DOMContentLoaded', function() {
   loadProds();
 });
@@ -410,7 +460,18 @@ function filtered(type) {
   var q = (document.getElementById(type === 'v' ? 'sv' : 'sp').value || '').toLowerCase();
   if (q) {
     list = list.filter(function(p) {
-      return ((p.title || '') + ' ' + (p.artist || '') + ' ' + (p.place || '') + ' ' + (p.genre || '') + ' ' + (p.model || '') + ' ' + (p.collection || '')).toLowerCase().indexOf(q) >= 0;
+      return (
+        ((p.title || '') + ' ' +
+        (p.artist || '') + ' ' +
+        (p.place || '') + ' ' +
+        (p.genre || '') + ' ' +
+        (p.model || '') + ' ' +
+        (p.collection || '') + ' ' +
+        (p.sale_note || '') + ' ' +
+        (p.sale_price || ''))
+        .toLowerCase()
+        .indexOf(q) >= 0
+      );
     });
   }
 
@@ -459,7 +520,7 @@ function draw(type) {
   var list = filtered(type);
 
   if (!list.length) {
-    tb.innerHTML = '<tr><td colspan="' + (type === 'v' ? 10 : 9) + '"><div class="empty"><div class="ico">' + (type === 'v' ? '&#128184;' : '&#128191;') + '</div><p>Nessun prodotto</p></div></td></tr>';
+    tb.innerHTML = '<tr><td colspan="' + (type === 'v' ? 12 : 9) + '"><div class="empty"><div class="ico">' + (type === 'v' ? '&#128184;' : '&#128191;') + '</div><p>Nessun prodotto</p></div></td></tr>';
     return;
   }
 
@@ -482,14 +543,18 @@ function draw(type) {
 
     if (type === 'v') {
       var d = p.sold_at ? new Date(p.sold_at).toLocaleDateString('it-IT') : '&mdash;';
+      var priceHtml = p.sale_price !== null && p.sale_price !== undefined ? '<span class="pill price">' + e(toMoney(p.sale_price)) + '</span>' : '&mdash;';
+      var noteHtml = p.sale_note ? '<div class="note-cell">' + e(p.sale_note) + '</div>' : '&mdash;';
       html += '<td><span class="pill sold">' + d + '</span></td>';
+      html += '<td>' + priceHtml + '</td>';
+      html += '<td>' + noteHtml + '</td>';
     }
 
     html += '<td>' +
       '<div class="row-actions">' +
         '<button type="button" class="ib edit" title="Modifica" onclick="editProd(\'' + jsq(pid) + '\')">&#9998;&#65039;</button>' +
         (type === 'p'
-          ? '<button type="button" class="ib sell" title="Segna venduto" onclick="sellProd(\'' + jsq(pid) + '\')">&#128184;</button>'
+          ? '<button type="button" class="ib sell" title="Segna venduto" onclick="openSellModal(\'' + jsq(pid) + '\')">&#128184;</button>'
           : '<button type="button" class="ib back" title="Ripristina disponibile" onclick="restoreProd(\'' + jsq(pid) + '\')">&#8617;&#65039;</button>') +
         '<button type="button" class="ib del" title="Elimina definitivamente" onclick="delProd(\'' + jsq(pid) + '\')">&#128465;&#65039;</button>' +
       '</div>' +
@@ -513,21 +578,83 @@ function escapeAttr(s) {
   return e(s);
 }
 
-async function sellProd(id) {
-  if (!confirm('Segnare come venduto? Verra aggiornato nel database.')) return;
+function openSellModal(id) {
+  var prod = null;
+  avail.forEach(function(x){
+    if (String(x.id) === String(id)) prod = x;
+  });
+  if (!prod) return;
+
+  document.getElementById('sellid').value = id;
+  document.getElementById('selltitle').value = (prod.title || '') + (prod.artist ? ' — ' + prod.artist : '');
+  document.getElementById('sellprice').value = '';
+  document.getElementById('sellnote').value = '';
+
+  var now = new Date();
+  var isoLocal = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0,16);
+  document.getElementById('selldate').value = isoLocal;
+
+  document.getElementById('sellov').classList.add('open');
+  setTimeout(function(){ document.getElementById('sellprice').focus(); }, 60);
+}
+
+function closeSellModal() {
+  document.getElementById('sellov').classList.remove('open');
+}
+
+document.getElementById('sellov').addEventListener('click', function(ev){
+  if (ev.target.id === 'sellov') closeSellModal();
+});
+
+async function confirmSell() {
+  var id = document.getElementById('sellid').value;
+  var priceRaw = document.getElementById('sellprice').value.trim();
+  var note = document.getElementById('sellnote').value.trim();
+  var soldLocalDate = document.getElementById('selldate').value;
+  var btn = document.getElementById('bsellsave');
+
+  if (!priceRaw) {
+    toast('Inserisci il prezzo di vendita', 'err');
+    return;
+  }
+
+  var price = parseFloat(priceRaw.replace(',', '.'));
+  if (isNaN(price) || price < 0) {
+    toast('Prezzo non valido', 'err');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Salvataggio...';
+
   try {
-    await PATCH(TP, id, { sold_at: new Date().toISOString() });
-    toast('Venduto — database aggiornato', 'ok');
+    var soldAtIso = soldLocalDate ? new Date(soldLocalDate).toISOString() : new Date().toISOString();
+
+    await PATCH(TP, id, {
+      sold_at: soldAtIso,
+      sale_price: Number(price.toFixed(2)),
+      sale_note: note || null
+    });
+
+    closeSellModal();
+    toast('Vendita registrata', 'ok');
     await loadProds();
   } catch(err) {
     toast('Errore: ' + err.message, 'err');
   }
+
+  btn.disabled = false;
+  btn.textContent = 'Conferma vendita';
 }
 
 async function restoreProd(id) {
   if (!confirm('Ripristinare come disponibile?')) return;
   try {
-    await PATCH(TP, id, { sold_at: null });
+    await PATCH(TP, id, {
+      sold_at: null,
+      sale_price: null,
+      sale_note: null
+    });
     toast('Ripristinato nel catalogo', 'ok');
     await loadProds();
   } catch(err) {
@@ -642,17 +769,17 @@ function normalizeLabel(v) {
   return (v || '').toString().trim().toLowerCase();
 }
 
-function renderSalesList(targetId, items) {
+function renderSalesList(targetId, items, isMoney) {
   var el = document.getElementById(targetId);
   if (!el) return;
 
   if (!items.length) {
-    el.innerHTML = '<div class="sales-item"><span class="name">Nessun dato</span><span class="val">0</span></div>';
+    el.innerHTML = '<div class="sales-item"><span class="name">Nessun dato</span><span class="val">' + (isMoney ? '€ 0,00' : '0') + '</span></div>';
     return;
   }
 
   el.innerHTML = items.map(function(item){
-    return '<div class="sales-item"><span class="name">' + e(item.label) + '</span><span class="val">' + item.value + '</span></div>';
+    return '<div class="sales-item"><span class="name">' + e(item.label) + '</span><span class="val">' + (isMoney ? e(toMoney(item.value)) : item.value) + '</span></div>';
   }).join('');
 }
 
@@ -664,11 +791,42 @@ function countSoldBy(modelName, collectionName) {
   }).length;
 }
 
+function revenueSoldBy(modelName, collectionName) {
+  var m = normalizeLabel(modelName);
+  var c = normalizeLabel(collectionName);
+  return sold.reduce(function(acc, p) {
+    if (normalizeLabel(p.model) === m && normalizeLabel(p.collection) === c) {
+      return acc + (Number(p.sale_price) || 0);
+    }
+    return acc;
+  }, 0);
+}
+
 function groupedCounts(data, field) {
   var out = {};
   data.forEach(function(p) {
     var k = (p[field] || 'N/A').toString().trim() || 'N/A';
     out[k] = (out[k] || 0) + 1;
+  });
+  return out;
+}
+
+function groupedRevenue(data, field) {
+  var out = {};
+  data.forEach(function(p) {
+    var k = (p[field] || 'N/A').toString().trim() || 'N/A';
+    out[k] = (out[k] || 0) + (Number(p.sale_price) || 0);
+  });
+  return out;
+}
+
+function groupedRevenueByCombo(data) {
+  var out = {};
+  data.forEach(function(p) {
+    var model = (p.model || 'N/A').toString().trim() || 'N/A';
+    var collection = (p.collection || 'N/A').toString().trim() || 'N/A';
+    var key = model + ' · ' + collection;
+    out[key] = (out[key] || 0) + (Number(p.sale_price) || 0);
   });
   return out;
 }
@@ -700,10 +858,48 @@ function renderSalesStats() {
     return { label: k, value: soldByCollection[k] };
   });
 
-  renderSalesList('sales-svuotatasche', svuotatascheItems);
-  renderSalesList('sales-posacenere', posacenereItems);
-  renderSalesList('sales-model-totals', modelItems);
-  renderSalesList('sales-collection-totals', collectionItems);
+  renderSalesList('sales-svuotatasche', svuotatascheItems, false);
+  renderSalesList('sales-posacenere', posacenereItems, false);
+  renderSalesList('sales-model-totals', modelItems, false);
+  renderSalesList('sales-collection-totals', collectionItems, false);
+
+  var totalRevenue = sold.reduce(function(acc, p){ return acc + (Number(p.sale_price) || 0); }, 0);
+  var salesWithPrice = sold.filter(function(p){ return Number(p.sale_price) > 0; }).length;
+  var notesCount = sold.filter(function(p){ return p.sale_note && String(p.sale_note).trim(); }).length;
+  var avgRevenue = salesWithPrice ? totalRevenue / salesWithPrice : 0;
+
+  document.getElementById('rev-total').textContent = toMoney(totalRevenue);
+  document.getElementById('rev-avg').textContent = toMoney(avgRevenue);
+  document.getElementById('rev-count').textContent = salesWithPrice;
+  document.getElementById('notes-count').textContent = notesCount;
+
+  var revenueByModel = groupedRevenue(sold, 'model');
+  var revenueModelItems = Object.keys(revenueByModel).sort(function(a,b){ return a.localeCompare(b, 'it'); }).map(function(k){
+    return { label: k, value: revenueByModel[k] };
+  });
+
+  var revenueByCollection = groupedRevenue(sold, 'collection');
+  var revenueCollectionItems = Object.keys(revenueByCollection).sort(function(a,b){ return a.localeCompare(b, 'it'); }).map(function(k){
+    return { label: k, value: revenueByCollection[k] };
+  });
+
+  var revenueByCombo = groupedRevenueByCombo(sold);
+  var revenueComboItems = Object.keys(revenueByCombo).sort(function(a,b){ return a.localeCompare(b, 'it'); }).map(function(k){
+    return { label: k, value: revenueByCombo[k] };
+  });
+
+  var mainComboItems = [];
+  ['standard','splash','spiral'].forEach(function(col){
+    mainComboItems.push({ label: 'Svuotatasche ' + col.charAt(0).toUpperCase() + col.slice(1), value: revenueSoldBy('svuotatasche', col) });
+  });
+  ['standard','splash','spiral'].forEach(function(col){
+    mainComboItems.push({ label: 'Posacenere ' + col.charAt(0).toUpperCase() + col.slice(1), value: revenueSoldBy('posacenere', col) });
+  });
+
+  renderSalesList('revenue-model-totals', revenueModelItems, true);
+  renderSalesList('revenue-collection-totals', revenueCollectionItems, true);
+  renderSalesList('revenue-model-collection', revenueComboItems, true);
+  renderSalesList('revenue-main-combos', mainComboItems, true);
 }
 
 async function loadStats() {
