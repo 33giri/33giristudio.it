@@ -63,6 +63,7 @@ tbody tr:hover td{background:var(--bg3)}
 .pill.model{background:var(--accentbg);color:var(--accent2);border:1px solid #7c6af730}
 .pill.sold{background:var(--redbg);color:var(--red);border:1px solid #f6666630}
 .pill.price{background:var(--greenbg);color:var(--green);border:1px solid #3ecf8e30}
+.pill.code{background:#161b2d;color:#9fb5ff;border:1px solid #31406b;font-family:'DM Mono',monospace}
 .thumb{width:36px;height:36px;border-radius:6px;object-fit:cover;border:1px solid var(--border);pointer-events:none}
 .thumb-ph{width:36px;height:36px;border-radius:6px;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text3);pointer-events:none}
 .row-actions{display:flex;gap:6px;align-items:center;justify-content:flex-start;position:relative;z-index:5;pointer-events:auto}
@@ -267,15 +268,28 @@ tbody tr:hover td{background:var(--bg3)}
         </div>
       </div>
       <div class="filters">
-        <input id="sp" type="search" placeholder="Cerca titolo, artista, luogo..." oninput="draw('p')">
+        <input id="sp" type="search" placeholder="Cerca codice, titolo, artista, luogo..." oninput="draw('p')">
         <select id="fmp" onchange="draw('p')"><option value="">Tutti i modelli</option></select>
         <select id="fcp" onchange="draw('p')"><option value="">Tutte le collezioni</option></select>
         <select id="fgp" onchange="draw('p')"><option value="">Tutti i generi</option></select>
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th></th><th>Titolo</th><th>Artista</th><th>Anno</th><th>Genere</th><th>Luogo</th><th>Modello</th><th>Collezione</th><th>Azioni</th></tr></thead>
-          <tbody id="tbp"><tr><td colspan="9"><div class="empty"><span class="spinner"></span>Caricamento...</div></td></tr></tbody>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Codice</th>
+              <th>Titolo</th>
+              <th>Artista</th>
+              <th>Anno</th>
+              <th>Genere</th>
+              <th>Luogo</th>
+              <th>Modello</th>
+              <th>Collezione</th>
+              <th>Azioni</th>
+            </tr>
+          </thead>
+          <tbody id="tbp"><tr><td colspan="10"><div class="empty"><span class="spinner"></span>Caricamento...</div></td></tr></tbody>
         </table>
       </div>
     </div>
@@ -283,13 +297,29 @@ tbody tr:hover td{background:var(--bg3)}
     <div class="section" id="sec-venduti">
       <div class="hrow"><div><h2>Prodotti venduti</h2><p>Con prezzo e nota salvati nel database</p></div></div>
       <div class="filters">
-        <input id="sv" type="search" placeholder="Cerca venduto..." oninput="draw('v')">
+        <input id="sv" type="search" placeholder="Cerca codice, venduto..." oninput="draw('v')">
         <select id="fmv" onchange="draw('v')"><option value="">Tutti i modelli</option></select>
         <select id="fgv" onchange="draw('v')"><option value="">Tutti i generi</option></select>
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th></th><th>Titolo</th><th>Artista</th><th>Anno</th><th>Genere</th><th>Luogo</th><th>Modello</th><th>Collezione</th><th>Venduto il</th><th>Prezzo</th><th>Nota</th><th>Azioni</th></tr></thead>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Codice</th>
+              <th>Titolo</th>
+              <th>Artista</th>
+              <th>Anno</th>
+              <th>Genere</th>
+              <th>Luogo</th>
+              <th>Modello</th>
+              <th>Collezione</th>
+              <th>Venduto il</th>
+              <th>Prezzo</th>
+              <th>Nota</th>
+              <th>Azioni</th>
+            </tr>
+          </thead>
           <tbody id="tbv"></tbody>
         </table>
       </div>
@@ -388,9 +418,10 @@ tbody tr:hover td{background:var(--bg3)}
     <h3 id="mtit">Nuovo prodotto</h3>
     <input type="hidden" id="eid">
     <div class="fg">
+      <div class="fi"><label>Codice</label><input id="fcode" placeholder="Es. S21"><div class="hint">Se vuoto, viene generato automaticamente in base a modello e collezione</div></div>
+      <div class="fi"><label>Anno</label><input id="fyear" type="number" placeholder="1975" min="1900" max="2100"></div>
       <div class="fi full"><label>Titolo *</label><input id="ftitle" placeholder="Titolo del vinile"></div>
       <div class="fi"><label>Artista</label><input id="fartist" placeholder="Nome artista"></div>
-      <div class="fi"><label>Anno</label><input id="fyear" type="number" placeholder="1975" min="1900" max="2100"></div>
       <div class="fi"><label>Genere</label><input id="fgenre" placeholder="Rock, Jazz, Pop..."></div>
       <div class="fi"><label>Luogo</label><input id="fplace" placeholder="Citta o paese"></div>
       <div class="fi"><label>Modello</label><input id="fmodel" placeholder="Es. Svuotatasche"></div>
@@ -450,6 +481,7 @@ var sold = [];
 var mods = [];
 var cols = [];
 var charts = {};
+var isBackfillingCodes = false;
 
 document.body.classList.add('locked');
 
@@ -620,7 +652,137 @@ function rebuildDerivedLists() {
   cols = uniqueValues('collection');
 }
 
-async function loadProds() {
+function normalizeLabel(v) {
+  return (v || '').toString().trim().toLowerCase();
+}
+
+function normalizeModelForCode(model) {
+  var m = normalizeLabel(model);
+  if (!m) return '';
+  if (m.indexOf('svuot') >= 0) return 'svuotatasche';
+  if (m.indexOf('posacen') >= 0) return 'posacenere';
+  return m;
+}
+
+function normalizeCollectionForCode(collection) {
+  var c = normalizeLabel(collection);
+  if (!c) return '';
+  if (c.indexOf('standard') >= 0) return 'standard';
+  if (c.indexOf('splash') >= 0) return 'splash';
+  if (c.indexOf('spiral') >= 0) return 'spiral';
+  if (c.indexOf('touch') >= 0) return 'touch';
+  return c;
+}
+
+function getCodeModelLetter(model) {
+  var m = normalizeModelForCode(model);
+  if (m === 'svuotatasche') return 'S';
+  if (m === 'posacenere') return 'P';
+  return '';
+}
+
+function getCodeCollectionDigit(collection) {
+  var c = normalizeCollectionForCode(collection);
+  if (c === 'standard') return '1';
+  if (c === 'splash') return '2';
+  if (c === 'spiral') return '3';
+  if (c === 'touch') return '4';
+  return '';
+}
+
+function getCodePrefix(model, collection) {
+  var letter = getCodeModelLetter(model);
+  var digit = getCodeCollectionDigit(collection);
+  if (!letter || !digit) return '';
+  return letter + digit;
+}
+
+function sanitizeCode(code) {
+  return (code || '').toString().trim().toUpperCase().replace(/\s+/g, '');
+}
+
+function isValidCodeFormat(code) {
+  return /^[SP][1-4]\d+$/.test(sanitizeCode(code));
+}
+
+function generateNextCode(model, collection, excludeId) {
+  var prefix = getCodePrefix(model, collection);
+  if (!prefix) return '';
+
+  var maxNum = 0;
+  avail.concat(sold).forEach(function(p) {
+    if (excludeId && String(p.id) === String(excludeId)) return;
+    var c = sanitizeCode(p.code);
+    var match = c.match(new RegExp('^' + prefix + '(\\d+)$'));
+    if (match) {
+      var n = parseInt(match[1], 10);
+      if (n > maxNum) maxNum = n;
+    }
+  });
+
+  return prefix + String(maxNum + 1);
+}
+
+async function ensureCodesForExistingProducts() {
+  if (isBackfillingCodes) return false;
+  isBackfillingCodes = true;
+
+  try {
+    var all = avail.concat(sold).slice();
+
+    all.sort(function(a, b) {
+      var da = a.created_at ? new Date(a.created_at).getTime() : 0;
+      var db = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return da - db;
+    });
+
+    var usedMaxByPrefix = {};
+    all.forEach(function(p) {
+      var code = sanitizeCode(p.code);
+      var m = code.match(/^([SP][1-4])(\d+)$/);
+      if (m) {
+        var prefix = m[1];
+        var n = parseInt(m[2], 10);
+        if (!usedMaxByPrefix[prefix] || n > usedMaxByPrefix[prefix]) usedMaxByPrefix[prefix] = n;
+      }
+    });
+
+    var updates = [];
+    all.forEach(function(p) {
+      var current = sanitizeCode(p.code);
+      if (current) return;
+
+      var prefix = getCodePrefix(p.model, p.collection);
+      if (!prefix) return;
+
+      var next = (usedMaxByPrefix[prefix] || 0) + 1;
+      usedMaxByPrefix[prefix] = next;
+
+      updates.push({
+        id: p.id,
+        code: prefix + String(next)
+      });
+    });
+
+    if (!updates.length) {
+      isBackfillingCodes = false;
+      return false;
+    }
+
+    for (var i = 0; i < updates.length; i++) {
+      await PATCH(TP, updates[i].id, { code: updates[i].code });
+    }
+
+    isBackfillingCodes = false;
+    return true;
+  } catch (err) {
+    isBackfillingCodes = false;
+    toast('Errore generazione codici: ' + err.message, 'err');
+    return false;
+  }
+}
+
+async function loadProds(skipCodeBackfill) {
   try {
     var data = await GET(TP, 'select=*&sold_at=is.null&order=created_at.desc');
     avail = data || [];
@@ -629,6 +791,13 @@ async function loadProds() {
     sold = sdata || [];
 
     rebuildDerivedLists();
+
+    if (!skipCodeBackfill) {
+      var changed = await ensureCodesForExistingProducts();
+      if (changed) {
+        return await loadProds(true);
+      }
+    }
 
     document.getElementById('dot').classList.add('on');
     refreshSel();
@@ -654,7 +823,8 @@ function filtered(type) {
   if (q) {
     list = list.filter(function(p) {
       return (
-        ((p.title || '') + ' ' +
+        ((p.code || '') + ' ' +
+        (p.title || '') + ' ' +
         (p.artist || '') + ' ' +
         (p.place || '') + ' ' +
         (p.genre || '') + ' ' +
@@ -713,7 +883,7 @@ function draw(type) {
   var list = filtered(type);
 
   if (!list.length) {
-    tb.innerHTML = '<tr><td colspan="' + (type === 'v' ? 12 : 9) + '"><div class="empty"><div class="ico">' + (type === 'v' ? '&#128184;' : '&#128191;') + '</div><p>Nessun prodotto</p></div></td></tr>';
+    tb.innerHTML = '<tr><td colspan="' + (type === 'v' ? 13 : 10) + '"><div class="empty"><div class="ico">' + (type === 'v' ? '&#128184;' : '&#128191;') + '</div><p>Nessun prodotto</p></div></td></tr>';
     return;
   }
 
@@ -724,8 +894,11 @@ function draw(type) {
       ? '<img class="thumb" src="' + escapeAttr(p.image1) + '" alt="" onerror="this.style.display=\'none\'">'
       : '<div class="thumb-ph">&#127991;</div>';
 
+    var codeHtml = p.code ? '<span class="pill code">' + e(p.code) + '</span>' : '&mdash;';
+
     html += '<tr>' +
       '<td>' + img + '</td>' +
+      '<td>' + codeHtml + '</td>' +
       '<td><span class="pname">' + e(p.title) + '</span></td>' +
       '<td>' + (p.artist ? e(p.artist) : '&mdash;') + '</td>' +
       '<td>' + (p.year || '&mdash;') + '</td>' +
@@ -779,7 +952,7 @@ function openSellModal(id) {
   if (!prod) return;
 
   document.getElementById('sellid').value = id;
-  document.getElementById('selltitle').value = (prod.title || '') + (prod.artist ? ' — ' + prod.artist : '');
+  document.getElementById('selltitle').value = (prod.code ? '[' + prod.code + '] ' : '') + (prod.title || '') + (prod.artist ? ' — ' + prod.artist : '');
   document.getElementById('sellprice').value = prod.sale_price || '';
   document.getElementById('sellnote').value = prod.sale_note || '';
 
@@ -869,6 +1042,7 @@ async function delProd(id) {
 function openModal(prod) {
   document.getElementById('mtit').textContent = prod ? 'Modifica prodotto' : 'Nuovo prodotto';
   document.getElementById('eid').value = prod ? prod.id : '';
+  document.getElementById('fcode').value = prod ? (prod.code || '') : '';
   document.getElementById('ftitle').value = prod ? (prod.title || '') : '';
   document.getElementById('fartist').value = prod ? (prod.artist || '') : '';
   document.getElementById('fyear').value = prod ? (prod.year || '') : '';
@@ -910,20 +1084,37 @@ async function saveProd() {
   btn.disabled = true;
   btn.textContent = 'Salvataggio...';
 
+  var model = document.getElementById('fmodel').value.trim() || null;
+  var collection = document.getElementById('fcollection').value.trim() || null;
+
+  var codeInput = sanitizeCode(document.getElementById('fcode').value);
+  var autoCode = '';
+
+  if (!codeInput) {
+    autoCode = generateNextCode(model, collection, id || null);
+  }
+
+  var finalCode = codeInput || autoCode || null;
+
   var yearRaw = document.getElementById('fyear').value.trim();
   var body = {
+    code: finalCode,
     title: title,
     artist: document.getElementById('fartist').value.trim() || null,
     year: yearRaw ? parseInt(yearRaw, 10) : null,
     genre: document.getElementById('fgenre').value.trim() || null,
     place: document.getElementById('fplace').value.trim() || null,
-    model: document.getElementById('fmodel').value.trim() || null,
-    collection: document.getElementById('fcollection').value.trim() || null,
+    model: model,
+    collection: collection,
     image1: document.getElementById('fimg1').value.trim() || null,
     image2: document.getElementById('fimg2').value.trim() || null
   };
 
   try {
+    if (!body.code && getCodePrefix(model, collection)) {
+      body.code = generateNextCode(model, collection, id || null);
+    }
+
     if (id) {
       await PATCH(TP, id, body);
       toast('Prodotto aggiornato nel database', 'ok');
@@ -956,10 +1147,6 @@ function renderLists() {
 
   rend('lmod', mods, 'Nessun modello');
   rend('lcol', cols, 'Nessuna collezione');
-}
-
-function normalizeLabel(v) {
-  return (v || '').toString().trim().toLowerCase();
 }
 
 function renderSalesList(targetId, items, isMoney) {
@@ -1025,7 +1212,7 @@ function groupedRevenueByCombo(data) {
 }
 
 function renderSalesStats() {
-  var targetCollections = ['standard', 'splash', 'spiral'];
+  var targetCollections = ['standard', 'splash', 'spiral', 'touch'];
 
   var svuotatascheItems = targetCollections.map(function(col) {
     return {
@@ -1082,10 +1269,10 @@ function renderSalesStats() {
   });
 
   var mainComboItems = [];
-  ['standard','splash','spiral'].forEach(function(col){
+  ['standard','splash','spiral','touch'].forEach(function(col){
     mainComboItems.push({ label: 'Svuotatasche ' + col.charAt(0).toUpperCase() + col.slice(1), value: revenueSoldBy('svuotatasche', col) });
   });
-  ['standard','splash','spiral'].forEach(function(col){
+  ['standard','splash','spiral','touch'].forEach(function(col){
     mainComboItems.push({ label: 'Posacenere ' + col.charAt(0).toUpperCase() + col.slice(1), value: revenueSoldBy('posacenere', col) });
   });
 
