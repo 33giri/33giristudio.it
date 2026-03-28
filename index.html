@@ -1,1184 +1,339 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>33Studio</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0f0f10;--bg2:#18181b;--bg3:#222228;--bg4:#2a2a32;
-  --border:#2e2e38;--border2:#3e3e4e;
-  --text:#e8e8f0;--text2:#9090a8;--text3:#5a5a72;
-  --accent:#7c6af7;--accent2:#9d8fff;--accentbg:#1e1a3e;
-  --green:#3ecf8e;--greenbg:#0f2a1e;
-  --red:#f66;--redbg:#2a1010;
-  --amber:#f5a623;--amberbg:#2a1f08;
-  --radius:10px;--radius-lg:14px;
-}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
-#app{display:flex;height:100vh;flex-direction:column}
-.topbar{display:flex;align-items:center;gap:12px;padding:12px 24px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
-.logo-link{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
-.topbar .logo{font-weight:700;font-size:29px;letter-spacing:-.03em;cursor:pointer;transition:opacity .2s;line-height:1}
-.topbar .logo:hover{opacity:.85}
-.topbar .logo span{color:var(--accent)}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 6px #f6666660;transition:all .3s}
-.dot.on{background:var(--green);box-shadow:0 0 6px #3ecf8e60}
-.nav-tabs{display:flex;gap:2px;margin-left:auto}
-.nav-tab{background:none;border:none;color:var(--text2);padding:7px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;transition:all .2s;display:flex;align-items:center;gap:6px}
-.nav-tab:hover{background:var(--bg3);color:var(--text)}
-.nav-tab.active{background:var(--accentbg);color:var(--accent2)}
-.badge{background:var(--accent);color:#fff;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;line-height:1.6}
-.badge.red{background:var(--red)}
-.main{flex:1;overflow:auto;padding:28px}
-.section{display:none}
-.section.active{display:block}
-.hrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:12px;flex-wrap:wrap}
-.hrow h2{font-size:19px;font-weight:600;letter-spacing:-.02em}
-.hrow p{font-size:13px;color:var(--text3);margin-top:2px}
-.actions{display:flex;gap:8px}
-.btn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 16px;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
-.btn:hover{border-color:var(--border2);color:var(--text);background:var(--bg4)}
-.btn.accent{background:var(--accentbg);border-color:var(--accent);color:var(--accent2)}
-.btn.accent:hover{background:#261f52}
-.filters{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
-.filters input,.filters select{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s;font-family:'DM Sans',sans-serif}
-.filters input{flex:1;min-width:180px}
-.filters input::placeholder{color:var(--text3)}
-.filters input:focus,.filters select:focus{border-color:var(--accent)}
-.filters select option{background:var(--bg2)}
-.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--bg2)}
-table{width:100%;border-collapse:collapse}
-th{text-align:left;padding:11px 16px;font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap}
-td{padding:11px 16px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);vertical-align:middle;position:relative}
-tr:last-child td{border-bottom:none}
-tbody tr:hover td{background:var(--bg3)}
-.pname{color:var(--text);font-weight:500}
-.pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
-.pill.genre{background:var(--bg4);color:var(--text2);border:1px solid var(--border)}
-.pill.model{background:var(--accentbg);color:var(--accent2);border:1px solid #7c6af730}
-.pill.sold{background:var(--redbg);color:var(--red);border:1px solid #f6666630}
-.pill.price{background:var(--greenbg);color:var(--green);border:1px solid #3ecf8e30}
-.thumb{width:36px;height:36px;border-radius:6px;object-fit:cover;border:1px solid var(--border);pointer-events:none}
-.thumb-ph{width:36px;height:36px;border-radius:6px;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text3);pointer-events:none}
-.row-actions{display:flex;gap:6px;align-items:center;justify-content:flex-start;position:relative;z-index:5;pointer-events:auto}
-.ib{
-  appearance:none;-webkit-appearance:none;background:none;border:none;cursor:pointer;
-  color:var(--text3);padding:8px;border-radius:7px;transition:all .18s;font-size:16px;
-  line-height:1;position:relative;z-index:6;pointer-events:auto
-}
-.ib.edit:hover{color:var(--accent2);background:var(--accentbg)}
-.ib.sell:hover{color:var(--green);background:var(--greenbg)}
-.ib.back:hover{color:var(--amber);background:var(--amberbg)}
-.ib.del:hover{color:var(--red);background:var(--redbg)}
-.empty{text-align:center;padding:60px 24px;color:var(--text3)}
-.empty .ico{font-size:34px;margin-bottom:10px;opacity:.4}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
-.overlay.open{display:flex}
-.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:32px;width:100%;max-width:640px;max-height:92vh;overflow-y:auto}
-.modal h3{font-size:17px;font-weight:600;margin-bottom:24px}
-.fg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.fi{display:flex;flex-direction:column;gap:6px}
-.fi.full{grid-column:1/-1}
-.fi label{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase}
-.fi input,.fi select,.fi textarea{
-  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);
-  padding:10px 13px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;
-  outline:none;transition:border-color .2s
-}
-.fi textarea{resize:vertical;min-height:88px}
-.fi input:focus,.fi select:focus,.fi textarea:focus{border-color:var(--accent)}
-.fi select option{background:var(--bg3)}
-.fi .hint{font-size:11px;color:var(--text3);margin-top:2px}
-.mfoot{display:flex;gap:10px;margin-top:28px;justify-content:flex-end}
-.bcancel{background:none;border:1px solid var(--border);border-radius:var(--radius);padding:10px 22px;color:var(--text2);cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif}
-.bcancel:hover{color:var(--text)}
-.bsave{background:var(--accent);border:none;border-radius:var(--radius);padding:10px 26px;color:#fff;cursor:pointer;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif}
-.bsave:hover{opacity:.88}
-.bsave:disabled{opacity:.4;cursor:not-allowed}
-.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:28px}
-.sc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
-.sc .lb{font-size:11px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
-.sc .vl{font-size:28px;font-weight:600;letter-spacing:-.03em}
-.crow{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-.cc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px}
-.cc h4{font-size:11px;font-weight:600;color:var(--text3);margin-bottom:18px;text-transform:uppercase;letter-spacing:.07em}
-.cc canvas{max-height:220px}
-.lgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.lcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px}
-.lcard h4{font-size:13px;font-weight:600;margin-bottom:16px;color:var(--text2)}
-.li{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
-.li:last-child{border-bottom:none}
-.li span{font-size:13px;color:var(--text)}
-.sales-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:10px}
-.sales-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px}
-.sales-card h4{font-size:13px;font-weight:700;margin-bottom:16px;color:var(--text)}
-.sales-item{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--border)}
-.sales-item:last-child{border-bottom:none}
-.sales-item .name{color:var(--text2);font-size:13px}
-.sales-item .val{color:var(--text);font-weight:700;font-size:14px}
-.note-cell{max-width:260px;white-space:normal;line-height:1.4}
-.toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:13px 20px;font-size:13px;color:var(--text);z-index:999;transform:translateY(16px);opacity:0;transition:all .28s;max-width:340px;pointer-events:none}
-.toast.show{transform:translateY(0);opacity:1}
-.toast.ok{border-left:3px solid var(--green)}
-.toast.err{border-left:3px solid var(--red)}
-.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
-@keyframes spin{to{transform:rotate(360deg)}}
-@media(max-width:640px){
-  .fg,.crow,.lgrid,.sales-grid{grid-template-columns:1fr}
-  .nav-tab{padding:6px 10px;font-size:12px}
-  .main{padding:16px}
-  .topbar .logo{font-size:24px}
-}
-.auth-screen{
-  position:fixed;
-  inset:0;
-  z-index:9999;
-  background:rgba(15,15,16,0.98);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:24px;
-}
-.auth-card{
-  width:100%;
-  max-width:420px;
-  background:var(--bg2);
-  border:1px solid var(--border2);
-  border-radius:18px;
-  padding:30px;
-  box-shadow:0 20px 60px rgba(0,0,0,.35);
-}
-.auth-card h1{
-  font-size:28px;
-  font-weight:700;
-  margin-bottom:8px;
-  letter-spacing:-.03em;
-}
-.auth-card h1 span{color:var(--accent)}
-.auth-card p{
-  color:var(--text3);
-  font-size:13px;
-  margin-bottom:20px;
-}
-.auth-field{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  margin-bottom:14px;
-}
-.auth-field label{
-  font-size:11px;
-  font-weight:600;
-  color:var(--text3);
-  letter-spacing:.06em;
-  text-transform:uppercase;
-}
-.auth-field input{
-  background:var(--bg3);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:12px 14px;
-  color:var(--text);
-  font-size:14px;
-  outline:none;
-  font-family:'DM Sans',sans-serif;
-}
-.auth-field input:focus{
-  border-color:var(--accent);
-}
-.auth-error{
-  min-height:18px;
-  color:var(--red);
-  font-size:12px;
-  margin-bottom:10px;
-}
-.auth-actions{
-  display:flex;
-  gap:10px;
-}
-.auth-btn{
-  width:100%;
-  background:var(--accent);
-  border:none;
-  border-radius:var(--radius);
-  padding:12px 16px;
-  color:#fff;
-  font-size:14px;
-  font-weight:700;
-  cursor:pointer;
-  font-family:'DM Sans',sans-serif;
-}
-.auth-btn:hover{opacity:.9}
-.locked{
-  overflow:hidden;
-}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>La Storia del Tuo Vinile — 33Giri</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black:#0a0a0b; --gold:#c9a84c; --gold-lt:#e8c97e;
+      --white:#f5f0e8; --gray:#6b6b6b;
+      --surface:rgba(255,255,255,0.04); --border:rgba(201,168,76,0.20);
+      --radius:18px; --glow:0 0 60px rgba(201,168,76,0.12);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:var(--black);color:var(--white);min-height:100vh;overflow-x:hidden}
+    body::after{content:'';position:fixed;top:-20%;left:50%;transform:translateX(-50%);width:700px;height:400px;background:radial-gradient(ellipse,rgba(201,168,76,0.07) 0%,transparent 70%);pointer-events:none;z-index:0}
+
+    .page{position:relative;z-index:1;max-width:700px;margin:0 auto;padding:72px 24px 120px;display:flex;flex-direction:column;align-items:center;gap:52px}
+
+    /* BRAND */
+    .brand{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+    .brand-name{font-family:'Playfair Display',serif;font-size:clamp(26px,5vw,36px);font-weight:900;letter-spacing:.10em;color:var(--gold);text-transform:uppercase}
+    .brand-claim{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.35em;text-transform:uppercase;color:var(--gray)}
+    .brand-line{margin-top:14px;width:48px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+
+    /* HERO */
+    .hero{text-align:center}
+    .hero h1{font-family:'Playfair Display',serif;font-size:clamp(26px,5.5vw,40px);font-weight:900;line-height:1.18;margin-bottom:14px}
+    .hero h1 em{font-style:italic;color:var(--gold)}
+    .hero p{font-size:14px;line-height:1.85;color:rgba(245,240,232,0.55);max-width:480px;margin:0 auto}
+
+    /* SEARCH */
+    .search-box{width:100%;max-width:440px;display:flex;flex-direction:column;align-items:center;gap:16px}
+    .search-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.30em;text-transform:uppercase;color:var(--gold)}
+    .code-input{width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius);padding:18px 24px;font-family:'DM Mono',monospace;font-size:30px;font-weight:500;color:var(--white);text-align:center;letter-spacing:.22em;text-transform:uppercase;outline:none;transition:border-color .3s,box-shadow .3s}
+    .code-input::placeholder{color:rgba(245,240,232,0.15)}
+    .code-input:focus{border-color:var(--gold);box-shadow:var(--glow)}
+    .code-input.shake{animation:shake .35s ease}
+    @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+    .btn-cerca{width:100%;padding:16px;background:linear-gradient(135deg,var(--gold) 0%,#9a7230 100%);color:#0a0a0b;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:14px;font-weight:700;letter-spacing:.10em;text-transform:uppercase;cursor:pointer;transition:all .3s ease;position:relative;overflow:hidden}
+    .btn-cerca::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent);transition:left .5s ease}
+    .btn-cerca:hover::before{left:100%}
+    .btn-cerca:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(201,168,76,0.30)}
+    .btn-cerca:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+    .search-hint{font-size:11px;color:rgba(245,240,232,0.28);text-align:center;line-height:1.7}
+    .search-hint code{font-family:'DM Mono',monospace;color:rgba(245,240,232,0.45);font-size:11px}
+
+    /* STATES */
+    .state{display:none;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:440px}
+    .state.on{display:flex}
+    .spinner{width:52px;height:52px;border-radius:50%;border:2px solid rgba(201,168,76,0.15);border-top-color:var(--gold);animation:spin .8s linear infinite;position:relative}
+    .spinner::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:10px;height:10px;border-radius:50%;background:var(--gold)}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-txt{font-family:'DM Mono',monospace;font-size:11px;color:var(--gray);letter-spacing:.2em;animation:blink 1.4s ease-in-out infinite}
+    @keyframes blink{0%,100%{opacity:.4}50%{opacity:1}}
+    .error-box{width:100%;padding:28px 24px;background:rgba(192,57,43,0.07);border:1px solid rgba(192,57,43,0.25);border-radius:var(--radius);text-align:center;display:flex;flex-direction:column;gap:10px}
+    .error-icon{font-size:28px}
+    .error-title{font-family:'Playfair Display',serif;font-size:18px;color:#e55}
+    .error-msg{font-size:13px;color:rgba(245,240,232,0.45);line-height:1.7}
+
+    /* RESULT CARD */
+    .result-card{display:none;flex-direction:column;width:100%;border:1px solid var(--border);border-radius:24px;overflow:hidden;background:var(--surface);box-shadow:0 28px 70px rgba(0,0,0,0.5),var(--glow);animation:cardIn .55s cubic-bezier(.34,1.56,.64,1) both}
+    .result-card.on{display:flex}
+    @keyframes cardIn{from{opacity:0;transform:translateY(28px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .rc-header{display:flex;align-items:center;justify-content:space-between;padding:18px 26px;border-bottom:1px solid var(--border);background:rgba(201,168,76,0.04)}
+    .rc-code{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.2em;color:var(--gold)}
+    .rc-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;border:1px solid var(--border);background:rgba(201,168,76,0.08);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-lt)}
+    .rc-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 6px var(--gold);animation:blink 2s ease-in-out infinite}
+    .rc-body{padding:32px 28px 36px;display:flex;flex-direction:column;gap:26px}
+    .rc-images{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .rc-images.single{grid-template-columns:1fr;max-width:320px;margin:0 auto;width:100%}
+    .rc-img-wrap{border-radius:14px;overflow:hidden;aspect-ratio:1;background:rgba(255,255,255,0.04);border:1px solid var(--border)}
+    .rc-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease}
+    .rc-img-wrap img:hover{transform:scale(1.04)}
+    .rc-disc-wrap{display:flex;justify-content:center}
+    .rc-disc{width:96px;height:96px;border-radius:50%;background:conic-gradient(#181818 0deg,#0f0f0f 40deg,#181818 80deg,#0f0f0f 120deg,#181818 160deg,#0f0f0f 200deg,#181818 240deg,#0f0f0f 280deg,#181818 320deg,#0f0f0f 360deg);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px #1c1c1c,0 0 0 5px #282828,0 18px 44px rgba(0,0,0,0.55);animation:slowspin 14s linear infinite}
+    @keyframes slowspin{to{transform:rotate(360deg)}}
+    .rc-disc-label{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold) 0%,#7a5c1e 100%);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:8px;font-weight:900;color:#0a0a0b;letter-spacing:.05em;text-align:center}
+    .rc-type{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold)}
+    .rc-name{font-family:'Playfair Display',serif;font-size:clamp(22px,5vw,30px);font-weight:900;line-height:1.12;margin-top:4px}
+    .rc-sub{font-size:13px;color:rgba(245,240,232,0.45);font-weight:300;margin-top:4px}
+    .rc-chips{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:999px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-size:11px;color:rgba(245,240,232,0.60)}
+    .rc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .rc-info{padding:14px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px}
+    .rc-info-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gray);margin-bottom:4px}
+    .rc-info-val{font-size:14px;font-weight:600}
+    .sold-badge{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:12px;background:rgba(201,168,76,0.08);border:1px solid var(--border);font-size:13px;color:var(--gold-lt)}
+    .sold-badge strong{font-family:'DM Mono',monospace}
+    .rc-footer{padding:20px 28px;border-top:1px solid var(--border);background:rgba(201,168,76,0.02);display:flex;flex-direction:column;align-items:center;gap:10px}
+    .rc-footer-note{font-size:12px;color:rgba(245,240,232,0.35);text-align:center}
+    .btn-wa{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:999px;background:rgba(37,211,102,0.08);border:1px solid rgba(37,211,102,0.25);color:#25d366;text-decoration:none;font-weight:600;font-size:13px;transition:all .3s ease}
+    .btn-wa:hover{background:rgba(37,211,102,0.15);transform:translateY(-2px)}
+
+    @media(max-width:480px){
+      .page{padding:52px 16px 90px;gap:40px}
+      .rc-body{padding:22px 18px 26px}
+      .rc-header,.rc-footer{padding:14px 18px}
+      .rc-grid{grid-template-columns:1fr}
+    }
+  </style>
 </head>
 <body>
-<div class="auth-screen" id="authScreen">
-  <div class="auth-card">
-    <h1>33<span>Studio</span></h1>
-    <p>Accedi con l’account autorizzato.</p>
+<div class="page">
 
-    <div class="auth-field">
-      <label>Email</label>
-      <input id="authEmail" type="email" placeholder="33giristudios@gmail.com" autocomplete="username">
-    </div>
+  <div class="brand">
+    <div class="brand-name">33Giri</div>
+    <div class="brand-claim">Reshape the Art</div>
+    <div class="brand-line"></div>
+  </div>
 
-    <div class="auth-field">
-      <label>Password</label>
-      <input id="authPassword" type="password" placeholder="Inserisci password" autocomplete="current-password">
-    </div>
+  <div class="hero">
+    <h1>La storia del<br><em>tuo vinile</em></h1>
+    <p>Ogni pezzo 33Giri nasce da un disco vero, con una storia. Inserisci il codice che hai ricevuto nella confezione per scoprirla.</p>
+  </div>
 
-    <div class="auth-error" id="authError"></div>
-
-    <div class="auth-actions">
-      <button type="button" class="auth-btn" onclick="loginStudio()">Accedi</button>
+  <div class="search-box">
+    <div class="search-label">Inserisci il tuo codice</div>
+    <input class="code-input" id="codeInput" type="text" placeholder="es. S31" maxlength="10" autocomplete="off" autocorrect="off" spellcheck="false"/>
+    <button class="btn-cerca" id="btnCerca">Scopri la storia</button>
+    <div class="search-hint">
+      Il codice è sul foglio nella confezione.<br>
+      Esempio: <code>S31</code> &nbsp;·&nbsp; <code>P21</code> &nbsp;·&nbsp; <code>S3100</code>
     </div>
   </div>
+
+  <div class="state" id="stateLoading">
+    <div class="spinner"></div>
+    <div class="loading-txt">Ricerca in corso…</div>
+  </div>
+
+  <div class="state" id="stateError">
+    <div class="error-box">
+      <div class="error-icon">🎵</div>
+      <div class="error-title">Codice non trovato</div>
+      <div class="error-msg" id="errorMsg">Il codice inserito non corrisponde a nessun vinile.<br>Controlla il foglio nella confezione e riprova.</div>
+    </div>
+  </div>
+
+  <div class="result-card" id="resultCard">
+    <div class="rc-header">
+      <div class="rc-code" id="rcCode">—</div>
+      <div class="rc-badge"><div class="rc-dot"></div><span>Autentico</span></div>
+    </div>
+    <div class="rc-body">
+      <div id="imagesWrap"></div>
+      <div class="rc-disc-wrap" id="discFallback">
+        <div class="rc-disc"><div class="rc-disc-label" id="discLabel">33G</div></div>
+      </div>
+      <div>
+        <div class="rc-type" id="rcType">—</div>
+        <div class="rc-name" id="rcName">—</div>
+        <div class="rc-sub"  id="rcSub">—</div>
+      </div>
+      <div class="rc-chips">
+        <div class="chip">🇮🇹 Handmade in Italy</div>
+        <div class="chip">♻️ Upcycled Vinyl</div>
+        <div class="chip">✦ Pezzo unico</div>
+      </div>
+      <div class="rc-grid">
+        <div class="rc-info"><div class="rc-info-label">Artista originale</div><div class="rc-info-val" id="rcArtist">—</div></div>
+        <div class="rc-info"><div class="rc-info-label">Genere</div><div class="rc-info-val" id="rcGenre">—</div></div>
+        <div class="rc-info"><div class="rc-info-label">Anno vinile</div><div class="rc-info-val" id="rcYear">—</div></div>
+        <div class="rc-info"><div class="rc-info-label">Modello</div><div class="rc-info-val" id="rcModel">—</div></div>
+        <div class="rc-info"><div class="rc-info-label">Collezione</div><div class="rc-info-val" id="rcCollection">—</div></div>
+        <div class="rc-info"><div class="rc-info-label">Provenienza</div><div class="rc-info-val" id="rcPlace">—</div></div>
+      </div>
+      <div id="soldWrap" style="display:none">
+        <div class="sold-badge">
+          <span>🏠</span>
+          <span>Venduto il <strong id="rcSoldAt">—</strong></span>
+          <span id="rcSaleNote" style="opacity:.7"></span>
+        </div>
+      </div>
+    </div>
+    <div class="rc-footer">
+      <div class="rc-footer-note">Hai domande sul tuo pezzo? Scrivici.</div>
+      <a class="btn-wa" id="btnWa" href="https://wa.me/393925430575" target="_blank" rel="noopener noreferrer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" fill="#25D366"/></svg>
+        Scrivici su WhatsApp
+      </a>
+    </div>
+  </div>
+
 </div>
-
-<div id="app">
-  <div class="topbar">
-    <a class="logo-link" href="index.html" title="Vai alla home page">
-      <div class="logo">33<span>Studio</span></div>
-    </a>
-    <div class="dot" id="dot"></div>
-    <div class="nav-tabs">
-      <button class="nav-tab active" onclick="goTo('prodotti',this)">Prodotti <span class="badge" id="btot">0</span></button>
-      <button class="nav-tab" onclick="goTo('venduti',this)">Venduti <span class="badge red" id="bsold">0</span></button>
-      <button class="nav-tab" onclick="goTo('modifica',this)">Valori usati</button>
-      <button class="nav-tab" onclick="goTo('statistiche',this)">Statistiche</button>
-    </div>
-  </div>
-
-  <div class="main">
-    <div class="section active" id="sec-prodotti">
-      <div class="hrow">
-        <div><h2>Prodotti disponibili</h2><p>Aggiunge, modifica e segna venduto — aggiorna il database in tempo reale</p></div>
-        <div class="actions">
-          <button type="button" class="btn" onclick="loadProds()">&#8635; Ricarica</button>
-          <button type="button" class="btn accent" onclick="openModal(null)">+ Nuovo prodotto</button>
-        </div>
-      </div>
-      <div class="filters">
-        <input id="sp" type="search" placeholder="Cerca titolo, artista, luogo..." oninput="draw('p')">
-        <select id="fmp" onchange="draw('p')"><option value="">Tutti i modelli</option></select>
-        <select id="fcp" onchange="draw('p')"><option value="">Tutte le collezioni</option></select>
-        <select id="fgp" onchange="draw('p')"><option value="">Tutti i generi</option></select>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th></th><th>Titolo</th><th>Artista</th><th>Anno</th><th>Genere</th><th>Luogo</th><th>Modello</th><th>Collezione</th><th>Azioni</th></tr></thead>
-          <tbody id="tbp"><tr><td colspan="9"><div class="empty"><span class="spinner"></span>Caricamento...</div></td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="section" id="sec-venduti">
-      <div class="hrow"><div><h2>Prodotti venduti</h2><p>Con prezzo e nota salvati nel database</p></div></div>
-      <div class="filters">
-        <input id="sv" type="search" placeholder="Cerca venduto..." oninput="draw('v')">
-        <select id="fmv" onchange="draw('v')"><option value="">Tutti i modelli</option></select>
-        <select id="fgv" onchange="draw('v')"><option value="">Tutti i generi</option></select>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th></th><th>Titolo</th><th>Artista</th><th>Anno</th><th>Genere</th><th>Luogo</th><th>Modello</th><th>Collezione</th><th>Venduto il</th><th>Prezzo</th><th>Nota</th><th>Azioni</th></tr></thead>
-          <tbody id="tbv"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="section" id="sec-modifica">
-      <div class="hrow"><div><h2>Valori usati nel catalogo</h2><p>Elenco automatico ricavato direttamente dalla tabella products</p></div></div>
-      <div class="lgrid">
-        <div class="lcard">
-          <h4>&#127936; Modelli</h4>
-          <div id="lmod"><div class="li"><span style="color:var(--text3)">Caricamento...</span></div></div>
-        </div>
-        <div class="lcard">
-          <h4>&#128193; Collezioni</h4>
-          <div id="lcol"><div class="li"><span style="color:var(--text3)">Caricamento...</span></div></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section" id="sec-statistiche">
-      <div class="hrow">
-        <div><h2>Statistiche</h2><p>Panoramica del catalogo e delle vendite</p></div>
-        <button type="button" class="btn" onclick="loadStats()">&#8635; Aggiorna</button>
-      </div>
-
-      <div class="sgrid">
-        <div class="sc"><div class="lb">Disponibili</div><div class="vl" id="stot" style="color:var(--green)">-</div></div>
-        <div class="sc"><div class="lb">Venduti</div><div class="vl" id="ssold" style="color:var(--red)">-</div></div>
-        <div class="sc"><div class="lb">Modelli</div><div class="vl" id="smods" style="color:var(--amber)">-</div></div>
-        <div class="sc"><div class="lb">Collezioni</div><div class="vl" id="scols">-</div></div>
-      </div>
-
-      <div class="sgrid">
-        <div class="sc"><div class="lb">Ricavi totali</div><div class="vl" id="rev-total" style="color:var(--green)">€ 0,00</div></div>
-        <div class="sc"><div class="lb">Media ricavo / vendita</div><div class="vl" id="rev-avg">€ 0,00</div></div>
-        <div class="sc"><div class="lb">Vendite con prezzo</div><div class="vl" id="rev-count" style="color:var(--amber)">0</div></div>
-        <div class="sc"><div class="lb">Note inserite</div><div class="vl" id="notes-count">0</div></div>
-      </div>
-
-      <div class="crow">
-        <div class="cc"><h4>Per modello</h4><canvas id="chm"></canvas></div>
-        <div class="cc"><h4>Per genere</h4><canvas id="chg"></canvas></div>
-      </div>
-      <div class="crow">
-        <div class="cc"><h4>Per anno</h4><canvas id="cha"></canvas></div>
-        <div class="cc"><h4>Per collezione</h4><canvas id="chc"></canvas></div>
-      </div>
-
-      <div class="hrow" style="margin-top:10px;margin-bottom:14px">
-        <div><h2 style="font-size:17px">Statistiche vendite</h2><p>Venduti e ricavi per modello e collezione</p></div>
-      </div>
-
-      <div class="sales-grid">
-        <div class="sales-card">
-          <h4>Svuotatasche venduti</h4>
-          <div id="sales-svuotatasche"></div>
-        </div>
-        <div class="sales-card">
-          <h4>Posacenere venduti</h4>
-          <div id="sales-posacenere"></div>
-        </div>
-        <div class="sales-card">
-          <h4>Totali vendite per modello</h4>
-          <div id="sales-model-totals"></div>
-        </div>
-        <div class="sales-card">
-          <h4>Totali vendite per collezione</h4>
-          <div id="sales-collection-totals"></div>
-        </div>
-      </div>
-
-      <div class="sales-grid">
-        <div class="sales-card">
-          <h4>Ricavi per modello</h4>
-          <div id="revenue-model-totals"></div>
-        </div>
-        <div class="sales-card">
-          <h4>Ricavi per collezione</h4>
-          <div id="revenue-collection-totals"></div>
-        </div>
-        <div class="sales-card">
-          <h4>Ricavi modello + collezione</h4>
-          <div id="revenue-model-collection"></div>
-        </div>
-        <div class="sales-card">
-          <h4>Ricavi combinazioni principali</h4>
-          <div id="revenue-main-combos"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="ov">
-  <div class="modal">
-    <h3 id="mtit">Nuovo prodotto</h3>
-    <input type="hidden" id="eid">
-    <div class="fg">
-      <div class="fi full"><label>Titolo *</label><input id="ftitle" placeholder="Titolo del vinile"></div>
-      <div class="fi"><label>Artista</label><input id="fartist" placeholder="Nome artista"></div>
-      <div class="fi"><label>Anno</label><input id="fyear" type="number" placeholder="1975" min="1900" max="2100"></div>
-      <div class="fi"><label>Genere</label><input id="fgenre" placeholder="Rock, Jazz, Pop..."></div>
-      <div class="fi"><label>Luogo</label><input id="fplace" placeholder="Citta o paese"></div>
-      <div class="fi"><label>Modello</label><input id="fmodel" placeholder="Es. Svuotatasche"></div>
-      <div class="fi"><label>Collezione</label><input id="fcollection" placeholder="Es. Standard"></div>
-      <div class="fi full"><label>Immagine 1 (URL)</label><input id="fimg1" placeholder="https://..."><div class="hint">URL immagine copertina</div></div>
-      <div class="fi full"><label>Immagine 2 (URL)</label><input id="fimg2" placeholder="https://..."><div class="hint">URL immagine secondaria</div></div>
-    </div>
-    <div class="mfoot">
-      <button type="button" class="bcancel" onclick="closeModal()">Annulla</button>
-      <button type="button" class="bsave" id="bsv" onclick="saveProd()">Salva prodotto</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="sellov">
-  <div class="modal">
-    <h3>Registra vendita</h3>
-    <input type="hidden" id="sellid">
-    <div class="fg">
-      <div class="fi full">
-        <label>Prodotto</label>
-        <input id="selltitle" readonly>
-      </div>
-      <div class="fi">
-        <label>Prezzo di vendita *</label>
-        <input id="sellprice" type="number" step="0.01" min="0" placeholder="Es. 29.90">
-      </div>
-      <div class="fi">
-        <label>Data vendita</label>
-        <input id="selldate" type="datetime-local">
-      </div>
-      <div class="fi full">
-        <label>Nota</label>
-        <textarea id="sellnote" placeholder="Es. venduto al mercatino, sconto applicato, pagamento contanti..."></textarea>
-      </div>
-    </div>
-    <div class="mfoot">
-      <button type="button" class="bcancel" onclick="closeSellModal()">Annulla</button>
-      <button type="button" class="bsave" id="bsellsave" onclick="confirmSell()">Conferma vendita</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-var SBURL = 'https://oovqibecarfdoybzbqwt.supabase.co';
-var SBKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vdnFpYmVjYXJmZG95YnpicXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjU1MDQsImV4cCI6MjA4NzM0MTUwNH0.yym_Y9i6Pl-dxicCxPXnWVg6E69RLYpyKBw7AWzq4wI';
-var TP = 'products';
-var ALLOWED_EMAIL = '33giristudios@gmail.com';
+const SUPABASE_URL      = 'https://oovqibecarfdoybzbqwt.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_pOzkEqcT6oMW4pLKv_sWZw_WyCkFC6a';
+const TABLE = 'code';
+const COL = {
+  code:'code', title:'title', artist:'artist', genre:'genre',
+  year:'year', model:'model', collection:'collection',
+  image1:'image1', image2:'image2', place:'place',
+  sold_at:'sold_at', sale_price:'sale_price', sale_note:'sale_note'
+};
 
-var sbAuth = window.supabase.createClient(SBURL, SBKEY);
-var currentAccessToken = null;
+const PRODOTTI   = { S:'Svuotatasche', P:'Posacenere' };
+const COLLEZIONI = { 1:'Normal', 2:'Splash', 3:'Spiral', 4:'Collab / Artista' };
 
-var avail = [];
-var sold = [];
-var mods = [];
-var cols = [];
-var charts = {};
+function parseCode(raw) {
+  const s = raw.trim().toUpperCase();
+  if (s.length < 3) return { ok:false, err:'Codice troppo corto. Esempio: <strong>S31</strong>' };
+  const lettera = s[0];
+  if (!PRODOTTI[lettera]) return { ok:false, err:`Lettera "<strong>${lettera}</strong>" non valida. Usa S o P.` };
+  const cifra = parseInt(s[1], 10);
+  if (isNaN(cifra) || !COLLEZIONI[cifra]) return { ok:false, err:`Cifra collezione "<strong>${s[1]}</strong>" non valida. Usa 1-4.` };
+  const id = parseInt(s.slice(2), 10);
+  if (isNaN(id) || id < 1) return { ok:false, err:`ID pezzo "<strong>${s.slice(2)}</strong>" non valido.` };
+  return { ok:true, raw:s, lettera, cifra, id,
+    nomeProdotto:PRODOTTI[lettera], nomeCollezione:COLLEZIONI[cifra] };
+}
 
-document.body.classList.add('locked');
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-window.addEventListener('DOMContentLoaded', async function() {
-  await initAuth();
-});
+async function fetchVinile(id) {
+  const { data, error } = await sb.from(TABLE).select('*').eq(COL.code, id).single();
+  if (error) {
+    if (error.code === 'PGRST116') return null;
+    throw new Error('Errore di connessione. Riprova tra qualche secondo.');
+  }
+  return data;
+}
 
-async function initAuth() {
-  try {
-    var sessionRes = await sbAuth.auth.getSession();
-    var session = sessionRes && sessionRes.data ? sessionRes.data.session : null;
+const $ = id => document.getElementById(id);
 
-    if (session && session.user && session.user.email === ALLOWED_EMAIL) {
-      currentAccessToken = session.access_token;
-      unlockSite();
-      await loadProds();
-    } else {
-      currentAccessToken = null;
-      lockSite();
-    }
+function setState(active) {
+  ['stateLoading','stateError','resultCard'].forEach(id => {
+    $(id).classList.toggle('on', id === active);
+  });
+}
 
-    sbAuth.auth.onAuthStateChange(async function(event, sessionNow) {
-      if (sessionNow && sessionNow.user && sessionNow.user.email === ALLOWED_EMAIL) {
-        currentAccessToken = sessionNow.access_token;
-        unlockSite();
-        await loadProds();
-      } else {
-        currentAccessToken = null;
-        lockSite();
-      }
+function showErr(html) {
+  $('errorMsg').innerHTML = html;
+  setState('stateError');
+}
+
+function val(rec, col, fallback='—') {
+  const v = rec[col];
+  return (v !== null && v !== undefined && String(v).trim() !== '') ? String(v).trim() : fallback;
+}
+
+function populate(p, rec) {
+  $('rcCode').textContent = p.raw;
+
+  const img1 = val(rec, COL.image1, '');
+  const img2 = val(rec, COL.image2, '');
+  const wrap = $('imagesWrap');
+  wrap.innerHTML = '';
+
+  if (img1 || img2) {
+    $('discFallback').style.display = 'none';
+    const grid = document.createElement('div');
+    grid.className = 'rc-images' + (img1 && img2 ? '' : ' single');
+    [img1, img2].filter(Boolean).forEach(src => {
+      const div = document.createElement('div');
+      div.className = 'rc-img-wrap';
+      const img = document.createElement('img');
+      img.src = src; img.alt = val(rec, COL.title, 'Vinile 33Giri'); img.loading = 'lazy';
+      div.appendChild(img); grid.appendChild(div);
     });
-  } catch (err) {
-    lockSite();
-    toast('Errore auth: ' + err.message, 'err');
+    wrap.appendChild(grid);
+  } else {
+    $('discFallback').style.display = 'flex';
+    $('discLabel').textContent = p.raw.slice(0,3);
   }
+
+  $('rcType').textContent = (val(rec, COL.model, p.nomeProdotto)).toUpperCase();
+  $('rcName').textContent = val(rec, COL.title, `${p.nomeProdotto} ${p.nomeCollezione} #${p.id}`);
+  $('rcSub').textContent  = `${val(rec, COL.collection, p.nomeCollezione)} · Pezzo #${p.id}`;
+
+  $('rcArtist').textContent     = val(rec, COL.artist);
+  $('rcGenre').textContent      = val(rec, COL.genre);
+  $('rcYear').textContent       = val(rec, COL.year);
+  $('rcModel').textContent      = val(rec, COL.model);
+  $('rcCollection').textContent = val(rec, COL.collection);
+  $('rcPlace').textContent      = val(rec, COL.place);
+
+  const soldAt = val(rec, COL.sold_at, '');
+  if (soldAt) {
+    const d = new Date(soldAt);
+    $('rcSoldAt').textContent  = isNaN(d) ? soldAt : d.toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'});
+    $('rcSaleNote').textContent = val(rec, COL.sale_note,'') ? `· ${val(rec, COL.sale_note,'')}` : '';
+    $('soldWrap').style.display = 'block';
+  } else {
+    $('soldWrap').style.display = 'none';
+  }
+
+  const msgWa = encodeURIComponent(`Ciao! Ho ricevuto il pezzo con codice ${p.raw} (${val(rec, COL.title, p.nomeProdotto)}) e volevo chiedervi:`);
+  $('btnWa').href = `https://wa.me/393925430575?text=${msgWa}`;
+
+  setState('resultCard');
+  setTimeout(() => $('resultCard').scrollIntoView({ behavior:'smooth', block:'start' }), 120);
 }
 
-function lockSite() {
-  document.body.classList.add('locked');
-  var el = document.getElementById('authScreen');
-  if (el) el.style.display = 'flex';
-}
-
-function unlockSite() {
-  document.body.classList.remove('locked');
-  var el = document.getElementById('authScreen');
-  if (el) el.style.display = 'none';
-}
-
-async function loginStudio() {
-  var email = document.getElementById('authEmail').value.trim().toLowerCase();
-  var password = document.getElementById('authPassword').value;
-  var err = document.getElementById('authError');
-
-  err.textContent = '';
-
-  if (email !== ALLOWED_EMAIL) {
-    err.textContent = 'Email non autorizzata';
+async function cerca() {
+  const raw = $('codeInput').value;
+  const p = parseCode(raw);
+  if (!p.ok) {
+    $('codeInput').classList.add('shake');
+    setTimeout(() => $('codeInput').classList.remove('shake'), 400);
+    showErr(p.err + '<br><br>Il codice è sul foglio nella confezione. Esempio: <strong>S31</strong>');
     return;
   }
-
-  var res = await sbAuth.auth.signInWithPassword({
-    email: email,
-    password: password
-  });
-
-  if (res.error) {
-    err.textContent = 'Email o password errati';
-    return;
-  }
-
-  currentAccessToken = res.data && res.data.session ? res.data.session.access_token : null;
-  unlockSite();
-  await loadProds();
-}
-
-document.addEventListener('keydown', function(e) {
-  var screen = document.getElementById('authScreen');
-  if (!screen || screen.style.display === 'none') return;
-
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    loginStudio();
-  }
-});
-
-function api(table, qs) {
-  return SBURL + '/rest/v1/' + table + (qs ? '?' + qs : '');
-}
-
-function hdr(extra) {
-  var bearer = currentAccessToken || SBKEY;
-  var h = {
-    'apikey': SBKEY,
-    'Authorization': 'Bearer ' + bearer,
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  };
-  if (extra) {
-    var ks = Object.keys(extra);
-    for (var i = 0; i < ks.length; i++) h[ks[i]] = extra[ks[i]];
-  }
-  return h;
-}
-
-async function GET(table, qs) {
-  var r = await fetch(api(table, qs || 'select=*'), { method:'GET', headers: hdr() });
-  if (!r.ok) throw new Error(await r.text());
-  return r.json();
-}
-
-async function POST(table, body) {
-  var r = await fetch(api(table), {
-    method:'POST',
-    headers: hdr({'Prefer':'return=representation'}),
-    body: JSON.stringify(body)
-  });
-  if (!r.ok) throw new Error(await r.text());
-  return r.json();
-}
-
-async function PATCH(table, id, body) {
-  var r = await fetch(api(table, 'id=eq.' + encodeURIComponent(id)), {
-    method:'PATCH',
-    headers: hdr({'Prefer':'return=representation'}),
-    body: JSON.stringify(body)
-  });
-  if (!r.ok) throw new Error(await r.text());
-  return r.json();
-}
-
-async function DELETE_ROW(table, id) {
-  var r = await fetch(api(table, 'id=eq.' + encodeURIComponent(id)), {
-    method:'DELETE',
-    headers: hdr()
-  });
-  if (!r.ok) throw new Error(await r.text());
-  return true;
-}
-
-function toMoney(v) {
-  var n = Number(v || 0);
-  return n.toLocaleString('it-IT', { style:'currency', currency:'EUR' });
-}
-
-function goTo(name, btn) {
-  document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
-  document.querySelectorAll('.nav-tab').forEach(function(t){ t.classList.remove('active'); });
-  document.getElementById('sec-' + name).classList.add('active');
-  btn.classList.add('active');
-  if (name === 'statistiche') loadStats();
-  if (name === 'modifica') renderLists();
-}
-
-function uniqueValues(field) {
-  var vals = [];
-  avail.concat(sold).forEach(function(p) {
-    var raw = p[field];
-    var v = raw === null || raw === undefined ? '' : String(raw).trim();
-    if (v && vals.indexOf(v) === -1) vals.push(v);
-  });
-  vals.sort(function(a, b) { return a.localeCompare(b, 'it'); });
-  return vals;
-}
-
-function rebuildDerivedLists() {
-  mods = uniqueValues('model');
-  cols = uniqueValues('collection');
-}
-
-async function loadProds() {
+  setState('stateLoading');
+  $('btnCerca').disabled = true;
   try {
-    var data = await GET(TP, 'select=*&sold_at=is.null&order=created_at.desc');
-    avail = data || [];
-
-    var sdata = await GET(TP, 'select=*&sold_at=not.is.null&order=sold_at.desc');
-    sold = sdata || [];
-
-    rebuildDerivedLists();
-
-    document.getElementById('dot').classList.add('on');
-    refreshSel();
-    renderLists();
-    draw('p');
-    draw('v');
-    badges();
-  } catch(err) {
-    toast('Errore: ' + err.message, 'err');
-  }
-}
-
-function badges() {
-  document.getElementById('btot').textContent = avail.length;
-  document.getElementById('bsold').textContent = sold.length;
-}
-
-function filtered(type) {
-  var src = type === 'v' ? sold : avail;
-  var list = src.slice();
-
-  var q = (document.getElementById(type === 'v' ? 'sv' : 'sp').value || '').toLowerCase();
-  if (q) {
-    list = list.filter(function(p) {
-      return (
-        ((p.title || '') + ' ' +
-        (p.artist || '') + ' ' +
-        (p.place || '') + ' ' +
-        (p.genre || '') + ' ' +
-        (p.model || '') + ' ' +
-        (p.collection || '') + ' ' +
-        (p.sale_note || '') + ' ' +
-        (p.sale_price || ''))
-        .toLowerCase()
-        .indexOf(q) >= 0
-      );
-    });
-  }
-
-  var m = document.getElementById(type === 'v' ? 'fmv' : 'fmp').value;
-  if (m) list = list.filter(function(p){ return p.model === m; });
-
-  var g = document.getElementById(type === 'v' ? 'fgv' : 'fgp').value;
-  if (g) list = list.filter(function(p){ return p.genre === g; });
-
-  if (type === 'p') {
-    var c = document.getElementById('fcp').value;
-    if (c) list = list.filter(function(p){ return p.collection === c; });
-  }
-
-  return list;
-}
-
-function refreshSel() {
-  function fill(ids, vals) {
-    ids.forEach(function(id) {
-      var el = document.getElementById(id);
-      if (!el) return;
-      var cur = el.value;
-      var first = el.options[0] ? el.options[0].outerHTML : '<option value="">Tutti</option>';
-      var html = first;
-      vals.forEach(function(v) {
-        html += '<option value="' + escapeAttr(v) + '"' + (cur === v ? ' selected' : '') + '>' + e(v) + '</option>';
-      });
-      el.innerHTML = html;
-    });
-  }
-
-  fill(['fmp','fmv'], mods);
-  fill(['fcp'], cols);
-
-  var gns = uniqueValues('genre');
-  fill(['fgp','fgv'], gns);
-}
-
-function jsq(s) {
-  return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-}
-
-function draw(type) {
-  var tb = document.getElementById(type === 'v' ? 'tbv' : 'tbp');
-  var list = filtered(type);
-
-  if (!list.length) {
-    tb.innerHTML = '<tr><td colspan="' + (type === 'v' ? 12 : 9) + '"><div class="empty"><div class="ico">' + (type === 'v' ? '&#128184;' : '&#128191;') + '</div><p>Nessun prodotto</p></div></td></tr>';
-    return;
-  }
-
-  var html = '';
-  list.forEach(function(p) {
-    var pid = String(p.id);
-    var img = p.image1
-      ? '<img class="thumb" src="' + escapeAttr(p.image1) + '" alt="" onerror="this.style.display=\'none\'">'
-      : '<div class="thumb-ph">&#127991;</div>';
-
-    html += '<tr>' +
-      '<td>' + img + '</td>' +
-      '<td><span class="pname">' + e(p.title) + '</span></td>' +
-      '<td>' + (p.artist ? e(p.artist) : '&mdash;') + '</td>' +
-      '<td>' + (p.year || '&mdash;') + '</td>' +
-      '<td>' + (p.genre ? '<span class="pill genre">' + e(p.genre) + '</span>' : '&mdash;') + '</td>' +
-      '<td>' + (p.place ? e(p.place) : '&mdash;') + '</td>' +
-      '<td>' + (p.model ? '<span class="pill model">' + e(p.model) + '</span>' : '&mdash;') + '</td>' +
-      '<td>' + (p.collection ? e(p.collection) : '&mdash;') + '</td>';
-
-    if (type === 'v') {
-      var d = p.sold_at ? new Date(p.sold_at).toLocaleDateString('it-IT') : '&mdash;';
-      var priceHtml = p.sale_price !== null && p.sale_price !== undefined ? '<span class="pill price">' + e(toMoney(p.sale_price)) + '</span>' : '&mdash;';
-      var noteHtml = p.sale_note ? '<div class="note-cell">' + e(p.sale_note) + '</div>' : '&mdash;';
-      html += '<td><span class="pill sold">' + d + '</span></td>';
-      html += '<td>' + priceHtml + '</td>';
-      html += '<td>' + noteHtml + '</td>';
-    }
-
-    html += '<td>' +
-      '<div class="row-actions">' +
-        '<button type="button" class="ib edit" title="Modifica" onclick="editProd(\'' + jsq(pid) + '\')">&#9998;&#65039;</button>' +
-        (type === 'p'
-          ? '<button type="button" class="ib sell" title="Segna venduto" onclick="openSellModal(\'' + jsq(pid) + '\')">&#128184;</button>'
-          : '<button type="button" class="ib back" title="Ripristina disponibile" onclick="restoreProd(\'' + jsq(pid) + '\')">&#8617;&#65039;</button>') +
-        '<button type="button" class="ib del" title="Elimina definitivamente" onclick="delProd(\'' + jsq(pid) + '\')">&#128465;&#65039;</button>' +
-      '</div>' +
-    '</td></tr>';
-  });
-
-  tb.innerHTML = html;
-}
-
-function e(s) {
-  if (s === null || s === undefined) return '';
-  return String(s)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#39;');
-}
-
-function escapeAttr(s) {
-  return e(s);
-}
-
-function openSellModal(id) {
-  var prod = null;
-  avail.forEach(function(x){
-    if (String(x.id) === String(id)) prod = x;
-  });
-  if (!prod) return;
-
-  document.getElementById('sellid').value = id;
-  document.getElementById('selltitle').value = (prod.title || '') + (prod.artist ? ' — ' + prod.artist : '');
-  document.getElementById('sellprice').value = prod.sale_price || '';
-  document.getElementById('sellnote').value = prod.sale_note || '';
-
-  var now = new Date();
-  var isoLocal = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0,16);
-  document.getElementById('selldate').value = isoLocal;
-
-  document.getElementById('sellov').classList.add('open');
-  setTimeout(function(){ document.getElementById('sellprice').focus(); }, 60);
-}
-
-function closeSellModal() {
-  document.getElementById('sellov').classList.remove('open');
-}
-
-document.getElementById('sellov').addEventListener('click', function(ev){
-  if (ev.target.id === 'sellov') closeSellModal();
-});
-
-async function confirmSell() {
-  var id = document.getElementById('sellid').value;
-  var priceRaw = document.getElementById('sellprice').value.trim();
-  var note = document.getElementById('sellnote').value.trim();
-  var soldLocalDate = document.getElementById('selldate').value;
-  var btn = document.getElementById('bsellsave');
-
-  if (!priceRaw) {
-    toast('Inserisci il prezzo di vendita', 'err');
-    return;
-  }
-
-  var price = parseFloat(priceRaw.replace(',', '.'));
-  if (isNaN(price) || price < 0) {
-    toast('Prezzo non valido', 'err');
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Salvataggio...';
-
-  try {
-    var soldAtIso = soldLocalDate ? new Date(soldLocalDate).toISOString() : new Date().toISOString();
-
-    await PATCH(TP, id, {
-      sold_at: soldAtIso,
-      sale_price: Number(price.toFixed(2)),
-      sale_note: note || null
-    });
-
-    closeSellModal();
-    toast('Vendita registrata', 'ok');
-    await loadProds();
-  } catch(err) {
-    toast('Errore: ' + err.message, 'err');
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Conferma vendita';
-}
-
-async function restoreProd(id) {
-  if (!confirm('Ripristinare come disponibile?')) return;
-  try {
-    await PATCH(TP, id, {
-      sold_at: null,
-      sale_price: null,
-      sale_note: null
-    });
-    toast('Ripristinato nel catalogo', 'ok');
-    await loadProds();
-  } catch(err) {
-    toast('Errore: ' + err.message, 'err');
-  }
-}
-
-async function delProd(id) {
-  if (!confirm('Eliminare definitivamente dal database?')) return;
-  try {
-    await DELETE_ROW(TP, id);
-    toast('Prodotto eliminato', 'ok');
-    await loadProds();
-  } catch(err) {
-    toast('Errore: ' + err.message, 'err');
-  }
-}
-
-function openModal(prod) {
-  document.getElementById('mtit').textContent = prod ? 'Modifica prodotto' : 'Nuovo prodotto';
-  document.getElementById('eid').value = prod ? prod.id : '';
-  document.getElementById('ftitle').value = prod ? (prod.title || '') : '';
-  document.getElementById('fartist').value = prod ? (prod.artist || '') : '';
-  document.getElementById('fyear').value = prod ? (prod.year || '') : '';
-  document.getElementById('fgenre').value = prod ? (prod.genre || '') : '';
-  document.getElementById('fplace').value = prod ? (prod.place || '') : '';
-  document.getElementById('fmodel').value = prod ? (prod.model || '') : '';
-  document.getElementById('fcollection').value = prod ? (prod.collection || '') : '';
-  document.getElementById('fimg1').value = prod ? (prod.image1 || '') : '';
-  document.getElementById('fimg2').value = prod ? (prod.image2 || '') : '';
-  document.getElementById('ov').classList.add('open');
-  setTimeout(function(){ document.getElementById('ftitle').focus(); }, 60);
-}
-
-function closeModal() {
-  document.getElementById('ov').classList.remove('open');
-}
-
-document.getElementById('ov').addEventListener('click', function(ev){
-  if (ev.target.id === 'ov') closeModal();
-});
-
-function editProd(id) {
-  var p = null;
-  avail.concat(sold).forEach(function(x) {
-    if (String(x.id) === String(id)) p = x;
-  });
-  if (p) openModal(p);
-}
-
-async function saveProd() {
-  var title = document.getElementById('ftitle').value.trim();
-  if (!title) {
-    toast('Il titolo è obbligatorio', 'err');
-    return;
-  }
-
-  var id = document.getElementById('eid').value;
-  var btn = document.getElementById('bsv');
-  btn.disabled = true;
-  btn.textContent = 'Salvataggio...';
-
-  var yearRaw = document.getElementById('fyear').value.trim();
-  var body = {
-    title: title,
-    artist: document.getElementById('fartist').value.trim() || null,
-    year: yearRaw ? parseInt(yearRaw, 10) : null,
-    genre: document.getElementById('fgenre').value.trim() || null,
-    place: document.getElementById('fplace').value.trim() || null,
-    model: document.getElementById('fmodel').value.trim() || null,
-    collection: document.getElementById('fcollection').value.trim() || null,
-    image1: document.getElementById('fimg1').value.trim() || null,
-    image2: document.getElementById('fimg2').value.trim() || null
-  };
-
-  try {
-    if (id) {
-      await PATCH(TP, id, body);
-      toast('Prodotto aggiornato nel database', 'ok');
-    } else {
-      await POST(TP, body);
-      toast('Prodotto aggiunto al catalogo', 'ok');
-    }
-    closeModal();
-    await loadProds();
-  } catch(err) {
-    toast('Errore: ' + err.message, 'err');
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Salva prodotto';
-}
-
-function renderLists() {
-  function rend(cid, items, emptyLabel) {
-    if (!items.length) {
-      document.getElementById(cid).innerHTML = '<div class="li"><span style="color:var(--text3)">' + emptyLabel + '</span></div>';
+    const rec = await fetchVinile(p.id);
+    if (!rec) {
+      showErr(`Nessun vinile con codice <strong>${p.raw}</strong>.<br><br>Controlla di aver digitato tutto correttamente oppure <a href="https://wa.me/393925430575" style="color:var(--gold)">scrivici su WhatsApp</a>.`);
       return;
     }
-    var html = '';
-    items.forEach(function(it) {
-      html += '<div class="li"><span>' + e(it) + '</span></div>';
-    });
-    document.getElementById(cid).innerHTML = html;
+    populate(p, rec);
+  } catch(e) {
+    showErr(e.message);
+  } finally {
+    $('btnCerca').disabled = false;
   }
-
-  rend('lmod', mods, 'Nessun modello');
-  rend('lcol', cols, 'Nessuna collezione');
 }
 
-function normalizeLabel(v) {
-  return (v || '').toString().trim().toLowerCase();
-}
-
-function renderSalesList(targetId, items, isMoney) {
-  var el = document.getElementById(targetId);
-  if (!el) return;
-
-  if (!items.length) {
-    el.innerHTML = '<div class="sales-item"><span class="name">Nessun dato</span><span class="val">' + (isMoney ? '€ 0,00' : '0') + '</span></div>';
-    return;
-  }
-
-  el.innerHTML = items.map(function(item){
-    return '<div class="sales-item"><span class="name">' + e(item.label) + '</span><span class="val">' + (isMoney ? e(toMoney(item.value)) : item.value) + '</span></div>';
-  }).join('');
-}
-
-function countSoldBy(modelName, collectionName) {
-  var m = normalizeLabel(modelName);
-  var c = normalizeLabel(collectionName);
-  return sold.filter(function(p) {
-    return normalizeLabel(p.model) === m && normalizeLabel(p.collection) === c;
-  }).length;
-}
-
-function revenueSoldBy(modelName, collectionName) {
-  var m = normalizeLabel(modelName);
-  var c = normalizeLabel(collectionName);
-  return sold.reduce(function(acc, p) {
-    if (normalizeLabel(p.model) === m && normalizeLabel(p.collection) === c) {
-      return acc + (Number(p.sale_price) || 0);
-    }
-    return acc;
-  }, 0);
-}
-
-function groupedCounts(data, field) {
-  var out = {};
-  data.forEach(function(p) {
-    var k = (p[field] || 'N/A').toString().trim() || 'N/A';
-    out[k] = (out[k] || 0) + 1;
+document.addEventListener('DOMContentLoaded', () => {
+  $('btnCerca').addEventListener('click', cerca);
+  $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') cerca(); });
+  $('codeInput').addEventListener('input', e => {
+    const pos = e.target.selectionStart;
+    e.target.value = e.target.value.toUpperCase();
+    e.target.setSelectionRange(pos, pos);
   });
-  return out;
-}
-
-function groupedRevenue(data, field) {
-  var out = {};
-  data.forEach(function(p) {
-    var k = (p[field] || 'N/A').toString().trim() || 'N/A';
-    out[k] = (out[k] || 0) + (Number(p.sale_price) || 0);
-  });
-  return out;
-}
-
-function groupedRevenueByCombo(data) {
-  var out = {};
-  data.forEach(function(p) {
-    var model = (p.model || 'N/A').toString().trim() || 'N/A';
-    var collection = (p.collection || 'N/A').toString().trim() || 'N/A';
-    var key = model + ' · ' + collection;
-    out[key] = (out[key] || 0) + (Number(p.sale_price) || 0);
-  });
-  return out;
-}
-
-function renderSalesStats() {
-  var targetCollections = ['standard', 'splash', 'spiral'];
-
-  var svuotatascheItems = targetCollections.map(function(col) {
-    return {
-      label: 'Svuotatasche ' + col.charAt(0).toUpperCase() + col.slice(1),
-      value: countSoldBy('svuotatasche', col)
-    };
-  });
-
-  var posacenereItems = targetCollections.map(function(col) {
-    return {
-      label: 'Posacenere ' + col.charAt(0).toUpperCase() + col.slice(1),
-      value: countSoldBy('posacenere', col)
-    };
-  });
-
-  var soldByModel = groupedCounts(sold, 'model');
-  var modelItems = Object.keys(soldByModel).sort(function(a,b){ return a.localeCompare(b, 'it'); }).map(function(k){
-    return { label: k, value: soldByModel[k] };
-  });
-
-  var soldByCollection = groupedCounts(sold, 'collection');
-  var collectionItems = Object.keys(soldByCollection).sort(function(a,b){ return a.localeCompare(b, 'it'); }).map(function(k){
-    return { label: k, value: soldByCollection[k] };
-  });
-
-  renderSalesList('sales-svuotatasche', svuotatascheItems, false);
-  renderSalesList('sales-posacenere', posacenereItems, false);
-  renderSalesList('sales-model-totals', modelItems, false);
-  renderSalesList('sales-collection-totals', collectionItems, false);
-
-  var totalRevenue = sold.reduce(function(acc, p){ return acc + (Number(p.sale_price) || 0); }, 0);
-  var salesWithPrice = sold.filter(function(p){ return Number(p.sale_price) > 0; }).length;
-  var notesCount = sold.filter(function(p){ return p.sale_note && String(p.sale_note).trim(); }).length;
-  var avgRevenue = salesWithPrice ? totalRevenue / salesWithPrice : 0;
-
-  document.getElementById('rev-total').textContent = toMoney(totalRevenue);
-  document.getElementById('rev-avg').textContent = toMoney(avgRevenue);
-  document.getElementById('rev-count').textContent = salesWithPrice;
-  document.getElementById('notes-count').textContent = notesCount;
-
-  var revenueByModel = groupedRevenue(sold, 'model');
-  var revenueModelItems = Object.keys(revenueByModel).sort(function(a,b){ return a.localeCompare(b, 'it'); }).map(function(k){
-    return { label: k, value: revenueByModel[k] };
-  });
-
-  var revenueByCollection = groupedRevenue(sold, 'collection');
-  var revenueCollectionItems = Object.keys(revenueByCollection).sort(function(a,b){ return a.localeCompare(b, 'it'); }).map(function(k){
-    return { label: k, value: revenueByCollection[k] };
-  });
-
-  var revenueByCombo = groupedRevenueByCombo(sold);
-  var revenueComboItems = Object.keys(revenueByCombo).sort(function(a,b){ return a.localeCompare(b, 'it'); }).map(function(k){
-    return { label: k, value: revenueByCombo[k] };
-  });
-
-  var mainComboItems = [];
-  ['standard','splash','spiral'].forEach(function(col){
-    mainComboItems.push({ label: 'Svuotatasche ' + col.charAt(0).toUpperCase() + col.slice(1), value: revenueSoldBy('svuotatasche', col) });
-  });
-  ['standard','splash','spiral'].forEach(function(col){
-    mainComboItems.push({ label: 'Posacenere ' + col.charAt(0).toUpperCase() + col.slice(1), value: revenueSoldBy('posacenere', col) });
-  });
-
-  renderSalesList('revenue-model-totals', revenueModelItems, true);
-  renderSalesList('revenue-collection-totals', revenueCollectionItems, true);
-  renderSalesList('revenue-model-collection', revenueComboItems, true);
-  renderSalesList('revenue-main-combos', mainComboItems, true);
-}
-
-async function loadStats() {
-  await loadProds();
-
-  document.getElementById('stot').textContent = avail.length;
-  document.getElementById('ssold').textContent = sold.length;
-  document.getElementById('smods').textContent = mods.length;
-  document.getElementById('scols').textContent = cols.length;
-
-  drawD('chm', grp('model', avail));
-  drawD('chg', grp('genre', avail));
-  drawB('cha', grp('year', avail));
-  drawD('chc', grp('collection', avail));
-
-  renderSalesStats();
-}
-
-function grp(field, data) {
-  var r = {};
-  data.forEach(function(p) {
-    var k = p[field] || 'N/A';
-    r[k] = (r[k] || 0) + 1;
-  });
-  return r;
-}
-
-var PAL = ['#7c6af7','#3ecf8e','#f5a623','#60a5fa','#f66','#a78bfa','#34d399','#fb923c','#38bdf8','#f472b6','#facc15','#4ade80'];
-
-function drawD(id, data) {
-  if (charts[id]) charts[id].destroy();
-  var labels = Object.keys(data);
-  charts[id] = new Chart(document.getElementById(id).getContext('2d'), {
-    type:'doughnut',
-    data:{
-      labels:labels,
-      datasets:[{
-        data:labels.map(function(l){ return data[l]; }),
-        backgroundColor:PAL.slice(0, labels.length),
-        borderWidth:2,
-        borderColor:'#18181b'
-      }]
-    },
-    options:{
-      plugins:{
-        legend:{
-          position:'bottom',
-          labels:{color:'#9090a8',font:{size:11},padding:14,boxWidth:12}
-        }
-      }
-    }
-  });
-}
-
-function drawB(id, data) {
-  if (charts[id]) charts[id].destroy();
-  var labels = Object.keys(data).filter(function(k){ return k !== 'N/A'; }).sort();
-  charts[id] = new Chart(document.getElementById(id).getContext('2d'), {
-    type:'bar',
-    data:{
-      labels:labels,
-      datasets:[{
-        label:'Pezzi',
-        data:labels.map(function(l){ return data[l] || 0; }),
-        backgroundColor:'#7c6af7aa',
-        borderRadius:4
-      }]
-    },
-    options:{
-      responsive:true,
-      scales:{
-        x:{ticks:{color:'#9090a8'},grid:{color:'#2e2e3840'}},
-        y:{ticks:{color:'#9090a8',stepSize:1},grid:{color:'#2e2e3840'},beginAtZero:true}
-      },
-      plugins:{legend:{display:false}}
-    }
-  });
-}
-
-function toast(msg, type) {
-  var el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'toast ' + (type || 'ok') + ' show';
-  clearTimeout(el._t);
-  el._t = setTimeout(function(){ el.classList.remove('show'); }, 3200);
-}
+  const params = new URLSearchParams(location.search);
+  const urlCode = params.get('codice') || params.get('code');
+  if (urlCode) { $('codeInput').value = urlCode.toUpperCase(); cerca(); }
+});
 </script>
 </body>
 </html>
