@@ -46,8 +46,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .btn.accent{background:var(--accentbg);border-color:var(--accent);color:var(--accent2)}
 .btn.accent:hover{background:#261f52}
 .filters{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
-.filters input,.filters select{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s;font-family:'DM Sans',sans-serif}
-.filters input{flex:1;min-width:180px}
+.filters input,.filters select{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:8px 12px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s;
+  font-family:'DM Sans',sans-serif
+}
+.filters input{min-width:140px;flex:1}
 .filters input::placeholder{color:var(--text3)}
 .filters input:focus,.filters select:focus{border-color:var(--accent)}
 .filters select option{background:var(--bg2)}
@@ -80,7 +84,7 @@ tbody tr:hover td{background:var(--bg3)}
 .empty .ico{font-size:34px;margin-bottom:10px;opacity:.4}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
 .overlay.open{display:flex}
-.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:32px;width:100%;max-width:640px;max-height:92vh;overflow-y:auto}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:32px;width:100%;max-width:720px;max-height:92vh;overflow-y:auto}
 .modal h3{font-size:17px;font-weight:600;margin-bottom:24px}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .fi{display:flex;flex-direction:column;gap:6px}
@@ -136,88 +140,31 @@ tbody tr:hover td{background:var(--bg3)}
   .topbar .logo{font-size:24px}
 }
 .auth-screen{
-  position:fixed;
-  inset:0;
-  z-index:9999;
-  background:rgba(15,15,16,0.98);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:24px;
+  position:fixed;inset:0;z-index:9999;background:rgba(15,15,16,0.98);
+  display:flex;align-items:center;justify-content:center;padding:24px;
 }
 .auth-card{
-  width:100%;
-  max-width:420px;
-  background:var(--bg2);
-  border:1px solid var(--border2);
-  border-radius:18px;
-  padding:30px;
-  box-shadow:0 20px 60px rgba(0,0,0,.35);
+  width:100%;max-width:420px;background:var(--bg2);border:1px solid var(--border2);
+  border-radius:18px;padding:30px;box-shadow:0 20px 60px rgba(0,0,0,.35);
 }
-.auth-card h1{
-  font-size:28px;
-  font-weight:700;
-  margin-bottom:8px;
-  letter-spacing:-.03em;
-}
+.auth-card h1{font-size:28px;font-weight:700;margin-bottom:8px;letter-spacing:-.03em}
 .auth-card h1 span{color:var(--accent)}
-.auth-card p{
-  color:var(--text3);
-  font-size:13px;
-  margin-bottom:20px;
-}
-.auth-field{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  margin-bottom:14px;
-}
-.auth-field label{
-  font-size:11px;
-  font-weight:600;
-  color:var(--text3);
-  letter-spacing:.06em;
-  text-transform:uppercase;
-}
+.auth-card p{color:var(--text3);font-size:13px;margin-bottom:20px}
+.auth-field{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.auth-field label{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase}
 .auth-field input{
-  background:var(--bg3);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:12px 14px;
-  color:var(--text);
-  font-size:14px;
-  outline:none;
-  font-family:'DM Sans',sans-serif;
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 14px;color:var(--text);font-size:14px;outline:none;font-family:'DM Sans',sans-serif;
 }
-.auth-field input:focus{
-  border-color:var(--accent);
-}
-.auth-error{
-  min-height:18px;
-  color:var(--red);
-  font-size:12px;
-  margin-bottom:10px;
-}
-.auth-actions{
-  display:flex;
-  gap:10px;
-}
+.auth-field input:focus{border-color:var(--accent)}
+.auth-error{min-height:18px;color:var(--red);font-size:12px;margin-bottom:10px}
+.auth-actions{display:flex;gap:10px}
 .auth-btn{
-  width:100%;
-  background:var(--accent);
-  border:none;
-  border-radius:var(--radius);
-  padding:12px 16px;
-  color:#fff;
-  font-size:14px;
-  font-weight:700;
-  cursor:pointer;
-  font-family:'DM Sans',sans-serif;
+  width:100%;background:var(--accent);border:none;border-radius:var(--radius);
+  padding:12px 16px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;
 }
 .auth-btn:hover{opacity:.9}
-.locked{
-  overflow:hidden;
-}
+.locked{overflow:hidden}
 </style>
 </head>
 <body>
@@ -267,12 +214,17 @@ tbody tr:hover td{background:var(--bg3)}
           <button type="button" class="btn accent" onclick="openModal(null)">+ Nuovo prodotto</button>
         </div>
       </div>
+
       <div class="filters">
-        <input id="sp" type="search" placeholder="Cerca codice, titolo, artista, luogo..." oninput="draw('p')">
+        <input id="fpcode" type="search" placeholder="Codice" oninput="draw('p')">
+        <input id="fptitle" type="search" placeholder="Nome / titolo" oninput="draw('p')">
+        <input id="fpartist" type="search" placeholder="Artista" oninput="draw('p')">
+        <input id="fpyear" type="search" placeholder="Anno" oninput="draw('p')">
+        <select id="fpgenre" onchange="draw('p')"><option value="">Tutti i generi</option></select>
         <select id="fmp" onchange="draw('p')"><option value="">Tutti i modelli</option></select>
         <select id="fcp" onchange="draw('p')"><option value="">Tutte le collezioni</option></select>
-        <select id="fgp" onchange="draw('p')"><option value="">Tutti i generi</option></select>
       </div>
+
       <div class="table-wrap">
         <table>
           <thead>
@@ -295,12 +247,20 @@ tbody tr:hover td{background:var(--bg3)}
     </div>
 
     <div class="section" id="sec-venduti">
-      <div class="hrow"><div><h2>Prodotti venduti</h2><p>Con prezzo e nota salvati nel database</p></div></div>
-      <div class="filters">
-        <input id="sv" type="search" placeholder="Cerca codice, venduto..." oninput="draw('v')">
-        <select id="fmv" onchange="draw('v')"><option value="">Tutti i modelli</option></select>
-        <select id="fgv" onchange="draw('v')"><option value="">Tutti i generi</option></select>
+      <div class="hrow">
+        <div><h2>Prodotti venduti</h2><p>Con prezzo e nota salvati nel database</p></div>
       </div>
+
+      <div class="filters">
+        <input id="fvcode" type="search" placeholder="Codice" oninput="draw('v')">
+        <input id="fvtitle" type="search" placeholder="Nome / titolo" oninput="draw('v')">
+        <input id="fvartist" type="search" placeholder="Artista" oninput="draw('v')">
+        <input id="fvyear" type="search" placeholder="Anno" oninput="draw('v')">
+        <select id="fvgenre" onchange="draw('v')"><option value="">Tutti i generi</option></select>
+        <select id="fmv" onchange="draw('v')"><option value="">Tutti i modelli</option></select>
+        <select id="fcv" onchange="draw('v')"><option value="">Tutte le collezioni</option></select>
+      </div>
+
       <div class="table-wrap">
         <table>
           <thead>
@@ -418,14 +378,23 @@ tbody tr:hover td{background:var(--bg3)}
     <h3 id="mtit">Nuovo prodotto</h3>
     <input type="hidden" id="eid">
     <div class="fg">
-      <div class="fi"><label>Codice</label><input id="fcode" placeholder="Es. S21"><div class="hint">Se vuoto, viene generato automaticamente in base a modello e collezione</div></div>
-      <div class="fi"><label>Anno</label><input id="fyear" type="number" placeholder="1975" min="1900" max="2100"></div>
+      <div class="fi">
+        <label>Codice</label>
+        <input id="fcode" placeholder="Es. S11 / P51 / C1">
+        <div class="hint">Se lo lasci vuoto, viene generato automaticamente. Esempi: Standard=S1, Splash=S2, Spiral=S3, Touch=S4, Soul=P5, Candela=C.</div>
+      </div>
+
+      <div class="fi">
+        <label>Anno</label>
+        <input id="fyear" type="number" placeholder="1975" min="1900" max="2100">
+      </div>
+
       <div class="fi full"><label>Titolo *</label><input id="ftitle" placeholder="Titolo del vinile"></div>
       <div class="fi"><label>Artista</label><input id="fartist" placeholder="Nome artista"></div>
       <div class="fi"><label>Genere</label><input id="fgenre" placeholder="Rock, Jazz, Pop..."></div>
-      <div class="fi"><label>Luogo</label><input id="fplace" placeholder="Citta o paese"></div>
-      <div class="fi"><label>Modello</label><input id="fmodel" placeholder="Es. Svuotatasche"></div>
-      <div class="fi"><label>Collezione</label><input id="fcollection" placeholder="Es. Standard"></div>
+      <div class="fi"><label>Luogo</label><input id="fplace" placeholder="Città o paese"></div>
+      <div class="fi"><label>Modello</label><input id="fmodel" placeholder="Es. Svuotatasche / Posacenere / Posacenere Soul"></div>
+      <div class="fi"><label>Collezione</label><input id="fcollection" placeholder="Es. Standard / Splash / Candela"></div>
       <div class="fi full"><label>Immagine 1 (URL)</label><input id="fimg1" placeholder="https://..."><div class="hint">URL immagine copertina</div></div>
       <div class="fi full"><label>Immagine 2 (URL)</label><input id="fimg2" placeholder="https://..."><div class="hint">URL immagine secondaria</div></div>
     </div>
@@ -469,7 +438,7 @@ tbody tr:hover td{background:var(--bg3)}
 
 <script>
 var SBURL = 'https://oovqibecarfdoybzbqwt.supabase.co';
-var SBKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vdnFpYmVjYXJmZG95YnpicXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjU1MDQsImV4cCI6MjA4NzM0MTUwNH0.yym_Y9i6Pl-dxicCxPXnWVg6E69RLYpyKBw7AWzq4wI';
+var SBKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmVjYXJmZG95YnpicXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjU1MDQsImV4cCI6MjA4NzM0MTUwNH0.yym_Y9i6Pl-dxicCxPXnWVg6E69RLYpyKBw7AWzq4wI';
 var TP = 'products';
 var ALLOWED_EMAIL = '33giristudios@gmail.com';
 
@@ -561,7 +530,6 @@ async function loginStudio() {
 document.addEventListener('keydown', function(e) {
   var screen = document.getElementById('authScreen');
   if (!screen || screen.style.display === 'none') return;
-
   if (e.key === 'Enter') {
     e.preventDefault();
     loginStudio();
@@ -627,6 +595,24 @@ function toMoney(v) {
   return n.toLocaleString('it-IT', { style:'currency', currency:'EUR' });
 }
 
+function e(s) {
+  if (s === null || s === undefined) return '';
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+function escapeAttr(s) {
+  return e(s);
+}
+
+function jsq(s) {
+  return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
 function goTo(name, btn) {
   document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
   document.querySelectorAll('.nav-tab').forEach(function(t){ t.classList.remove('active'); });
@@ -634,6 +620,14 @@ function goTo(name, btn) {
   btn.classList.add('active');
   if (name === 'statistiche') loadStats();
   if (name === 'modifica') renderLists();
+}
+
+function normalizeLabel(v) {
+  return (v || '').toString().trim().toLowerCase();
+}
+
+function sanitizeCode(code) {
+  return (code || '').toString().trim().toUpperCase().replace(/\s+/g, '');
 }
 
 function uniqueValues(field) {
@@ -652,68 +646,167 @@ function rebuildDerivedLists() {
   cols = uniqueValues('collection');
 }
 
-function normalizeLabel(v) {
-  return (v || '').toString().trim().toLowerCase();
+/* =========================
+   CODICI AUTOMATICI
+   ========================= */
+
+/*
+ Regole principali:
+ - Svuotatasche + Standard -> S1 + progressivo  => S11, S12...
+ - Svuotatasche + Splash   -> S2 + progressivo  => S21, S22...
+ - Svuotatasche + Spiral   -> S3 + progressivo
+ - Svuotatasche + Touch    -> S4 + progressivo
+ - Posacenere + Standard   -> P1 + progressivo
+ - Posacenere + Splash     -> P2 + progressivo
+ - Posacenere + Spiral     -> P3 + progressivo
+ - Posacenere + Touch      -> P4 + progressivo
+ - Posacenere Soul         -> P5 + progressivo  => P51, P52...
+ - Collezione Candela      -> C + progressivo   => C1, C2...
+ Per nuove collezioni o modelli non previsti:
+ - modello sconosciuto: usa la prima lettera del modello
+ - collezione sconosciuta: usa il prossimo numero libero
+*/
+
+var BASE_MODEL_CODES = {
+  'svuotatasche': 'S',
+  'posacenere': 'P',
+  'candela': 'C'
+};
+
+var BASE_COLLECTION_CODES = {
+  'standard': '1',
+  'splash': '2',
+  'spiral': '3',
+  'touch': '4',
+  'soul': '5'
+};
+
+var SPECIAL_PREFIX_RULES = [
+  {
+    type: 'collection',
+    match: ['candela'],
+    prefix: 'C'
+  },
+  {
+    type: 'model',
+    match: ['posacenere soul', 'soul posacenere'],
+    prefix: 'P5'
+  }
+];
+
+function matchesAny(normalizedValue, arr) {
+  for (var i = 0; i < arr.length; i++) {
+    if (normalizedValue === arr[i]) return true;
+  }
+  return false;
 }
 
-function normalizeModelForCode(model) {
+function getSpecialPrefix(model, collection) {
+  var m = normalizeLabel(model);
+  var c = normalizeLabel(collection);
+
+  for (var i = 0; i < SPECIAL_PREFIX_RULES.length; i++) {
+    var rule = SPECIAL_PREFIX_RULES[i];
+    if (rule.type === 'collection' && matchesAny(c, rule.match)) return rule.prefix;
+    if (rule.type === 'model' && matchesAny(m, rule.match)) return rule.prefix;
+  }
+  return '';
+}
+
+function getBaseModelCode(model) {
   var m = normalizeLabel(model);
   if (!m) return '';
-  if (m.indexOf('svuot') >= 0) return 'svuotatasche';
-  if (m.indexOf('posacen') >= 0) return 'posacenere';
-  return m;
+
+  if (BASE_MODEL_CODES[m]) return BASE_MODEL_CODES[m];
+
+  if (m.indexOf('svuot') >= 0) return 'S';
+  if (m.indexOf('posacen') >= 0) return 'P';
+  if (m.indexOf('candela') >= 0) return 'C';
+
+  var cleaned = m.replace(/[^a-z0-9 ]/g, ' ').trim();
+  if (!cleaned) return '';
+  return cleaned.charAt(0).toUpperCase();
 }
 
-function normalizeCollectionForCode(collection) {
+function getUsedDynamicCollectionNumbers() {
+  var used = {};
+
+  Object.keys(BASE_COLLECTION_CODES).forEach(function(k) {
+    used[BASE_COLLECTION_CODES[k]] = true;
+  });
+
+  avail.concat(sold).forEach(function(p) {
+    var c = sanitizeCode(p.code);
+    var m = c.match(/^[A-Z]+(\d)\d+$/);
+    if (m) used[m[1]] = true;
+  });
+
+  return used;
+}
+
+function getDynamicCollectionCode(collection) {
   var c = normalizeLabel(collection);
   if (!c) return '';
-  if (c.indexOf('standard') >= 0) return 'standard';
-  if (c.indexOf('splash') >= 0) return 'splash';
-  if (c.indexOf('spiral') >= 0) return 'spiral';
-  if (c.indexOf('touch') >= 0) return 'touch';
-  return c;
+
+  if (BASE_COLLECTION_CODES[c]) return BASE_COLLECTION_CODES[c];
+
+  var used = getUsedDynamicCollectionNumbers();
+  for (var i = 1; i <= 9; i++) {
+    var digit = String(i);
+    if (!used[digit]) return digit;
+  }
+
+  return '9';
 }
 
-function getCodeModelLetter(model) {
-  var m = normalizeModelForCode(model);
-  if (m === 'svuotatasche') return 'S';
-  if (m === 'posacenere') return 'P';
+function getCollectionCode(collection) {
+  return getDynamicCollectionCode(collection);
+}
+
+function resolveCodePrefix(model, collection) {
+  var special = getSpecialPrefix(model, collection);
+  if (special) return special;
+
+  var modelCode = getBaseModelCode(model);
+  var collectionCode = getCollectionCode(collection);
+
+  if (modelCode && collectionCode) return modelCode + collectionCode;
+  if (modelCode) return modelCode;
+
   return '';
 }
 
-function getCodeCollectionDigit(collection) {
-  var c = normalizeCollectionForCode(collection);
-  if (c === 'standard') return '1';
-  if (c === 'splash') return '2';
-  if (c === 'spiral') return '3';
-  if (c === 'touch') return '4';
-  return '';
-}
-
-function getCodePrefix(model, collection) {
-  var letter = getCodeModelLetter(model);
-  var digit = getCodeCollectionDigit(collection);
-  if (!letter || !digit) return '';
-  return letter + digit;
-}
-
-function sanitizeCode(code) {
-  return (code || '').toString().trim().toUpperCase().replace(/\s+/g, '');
+function escapeRegExp(str) {
+  return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function isValidCodeFormat(code) {
-  return /^[SP][1-4]\d+$/.test(sanitizeCode(code));
+  return /^[A-Z]+\d+$/.test(sanitizeCode(code));
 }
 
-function generateNextCode(model, collection, excludeId) {
-  var prefix = getCodePrefix(model, collection);
+function codeExists(code, excludeId) {
+  var wanted = sanitizeCode(code);
+  if (!wanted) return false;
+
+  var all = avail.concat(sold);
+  for (var i = 0; i < all.length; i++) {
+    if (excludeId && String(all[i].id) === String(excludeId)) continue;
+    if (sanitizeCode(all[i].code) === wanted) return true;
+  }
+  return false;
+}
+
+function generateNextCode(prefix, excludeId) {
+  prefix = sanitizeCode(prefix);
   if (!prefix) return '';
 
   var maxNum = 0;
+  var re = new RegExp('^' + escapeRegExp(prefix) + '(\\d+)$');
+
   avail.concat(sold).forEach(function(p) {
     if (excludeId && String(p.id) === String(excludeId)) return;
     var c = sanitizeCode(p.code);
-    var match = c.match(new RegExp('^' + prefix + '(\\d+)$'));
+    var match = c.match(re);
     if (match) {
       var n = parseInt(match[1], 10);
       if (n > maxNum) maxNum = n;
@@ -737,13 +830,30 @@ async function ensureCodesForExistingProducts() {
     });
 
     var usedMaxByPrefix = {};
+
     all.forEach(function(p) {
-      var code = sanitizeCode(p.code);
-      var m = code.match(/^([SP][1-4])(\d+)$/);
-      if (m) {
-        var prefix = m[1];
-        var n = parseInt(m[2], 10);
-        if (!usedMaxByPrefix[prefix] || n > usedMaxByPrefix[prefix]) usedMaxByPrefix[prefix] = n;
+      var current = sanitizeCode(p.code);
+      if (!current) return;
+
+      var prefix = '';
+      var seq = 0;
+
+      var special = getSpecialPrefix(p.model, p.collection);
+      if (special && current.indexOf(special) === 0) {
+        prefix = special;
+        seq = parseInt(current.slice(special.length), 10) || 0;
+      } else {
+        var standardPrefix = resolveCodePrefix(p.model, p.collection);
+        if (standardPrefix && current.indexOf(standardPrefix) === 0) {
+          prefix = standardPrefix;
+          seq = parseInt(current.slice(standardPrefix.length), 10) || 0;
+        }
+      }
+
+      if (prefix && seq) {
+        if (!usedMaxByPrefix[prefix] || seq > usedMaxByPrefix[prefix]) {
+          usedMaxByPrefix[prefix] = seq;
+        }
       }
     });
 
@@ -752,7 +862,7 @@ async function ensureCodesForExistingProducts() {
       var current = sanitizeCode(p.code);
       if (current) return;
 
-      var prefix = getCodePrefix(p.model, p.collection);
+      var prefix = resolveCodePrefix(p.model, p.collection);
       if (!prefix) return;
 
       var next = (usedMaxByPrefix[prefix] || 0) + 1;
@@ -782,6 +892,10 @@ async function ensureCodesForExistingProducts() {
   }
 }
 
+/* =========================
+   LOAD
+   ========================= */
+
 async function loadProds(skipCodeBackfill) {
   try {
     var data = await GET(TP, 'select=*&sold_at=is.null&order=created_at.desc');
@@ -794,9 +908,7 @@ async function loadProds(skipCodeBackfill) {
 
     if (!skipCodeBackfill) {
       var changed = await ensureCodesForExistingProducts();
-      if (changed) {
-        return await loadProds(true);
-      }
+      if (changed) return await loadProds(true);
     }
 
     document.getElementById('dot').classList.add('on');
@@ -815,43 +927,6 @@ function badges() {
   document.getElementById('bsold').textContent = sold.length;
 }
 
-function filtered(type) {
-  var src = type === 'v' ? sold : avail;
-  var list = src.slice();
-
-  var q = (document.getElementById(type === 'v' ? 'sv' : 'sp').value || '').toLowerCase();
-  if (q) {
-    list = list.filter(function(p) {
-      return (
-        ((p.code || '') + ' ' +
-        (p.title || '') + ' ' +
-        (p.artist || '') + ' ' +
-        (p.place || '') + ' ' +
-        (p.genre || '') + ' ' +
-        (p.model || '') + ' ' +
-        (p.collection || '') + ' ' +
-        (p.sale_note || '') + ' ' +
-        (p.sale_price || ''))
-        .toLowerCase()
-        .indexOf(q) >= 0
-      );
-    });
-  }
-
-  var m = document.getElementById(type === 'v' ? 'fmv' : 'fmp').value;
-  if (m) list = list.filter(function(p){ return p.model === m; });
-
-  var g = document.getElementById(type === 'v' ? 'fgv' : 'fgp').value;
-  if (g) list = list.filter(function(p){ return p.genre === g; });
-
-  if (type === 'p') {
-    var c = document.getElementById('fcp').value;
-    if (c) list = list.filter(function(p){ return p.collection === c; });
-  }
-
-  return list;
-}
-
 function refreshSel() {
   function fill(ids, vals) {
     ids.forEach(function(id) {
@@ -868,14 +943,42 @@ function refreshSel() {
   }
 
   fill(['fmp','fmv'], mods);
-  fill(['fcp'], cols);
-
-  var gns = uniqueValues('genre');
-  fill(['fgp','fgv'], gns);
+  fill(['fcp','fcv'], cols);
+  fill(['fpgenre','fvgenre'], uniqueValues('genre'));
 }
 
-function jsq(s) {
-  return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+function fieldContains(value, search) {
+  var a = normalizeLabel(value);
+  var b = normalizeLabel(search);
+  if (!b) return true;
+  return a.indexOf(b) >= 0;
+}
+
+function filtered(type) {
+  var src = type === 'v' ? sold : avail;
+  var list = src.slice();
+
+  var codeQ   = document.getElementById(type === 'v' ? 'fvcode'   : 'fpcode').value;
+  var titleQ  = document.getElementById(type === 'v' ? 'fvtitle'  : 'fptitle').value;
+  var artistQ = document.getElementById(type === 'v' ? 'fvartist' : 'fpartist').value;
+  var yearQ   = document.getElementById(type === 'v' ? 'fvyear'   : 'fpyear').value;
+  var genreQ  = document.getElementById(type === 'v' ? 'fvgenre'  : 'fpgenre').value;
+  var modelQ  = document.getElementById(type === 'v' ? 'fmv'      : 'fmp').value;
+  var collQ   = document.getElementById(type === 'v' ? 'fcv'      : 'fcp').value;
+
+  list = list.filter(function(p) {
+    var ok = true;
+    if (codeQ) ok = ok && fieldContains(p.code, codeQ);
+    if (titleQ) ok = ok && fieldContains(p.title, titleQ);
+    if (artistQ) ok = ok && fieldContains(p.artist, artistQ);
+    if (yearQ) ok = ok && String(p.year || '').indexOf(String(yearQ).trim()) >= 0;
+    if (genreQ) ok = ok && normalizeLabel(p.genre) === normalizeLabel(genreQ);
+    if (modelQ) ok = ok && normalizeLabel(p.model) === normalizeLabel(modelQ);
+    if (collQ) ok = ok && normalizeLabel(p.collection) === normalizeLabel(collQ);
+    return ok;
+  });
+
+  return list;
 }
 
 function draw(type) {
@@ -930,19 +1033,9 @@ function draw(type) {
   tb.innerHTML = html;
 }
 
-function e(s) {
-  if (s === null || s === undefined) return '';
-  return String(s)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#39;');
-}
-
-function escapeAttr(s) {
-  return e(s);
-}
+/* =========================
+   MODALI
+   ========================= */
 
 function openSellModal(id) {
   var prod = null;
@@ -1086,15 +1179,35 @@ async function saveProd() {
 
   var model = document.getElementById('fmodel').value.trim() || null;
   var collection = document.getElementById('fcollection').value.trim() || null;
+  var manualCode = sanitizeCode(document.getElementById('fcode').value);
+  var finalCode = null;
 
-  var codeInput = sanitizeCode(document.getElementById('fcode').value);
-  var autoCode = '';
-
-  if (!codeInput) {
-    autoCode = generateNextCode(model, collection, id || null);
+  if (manualCode) {
+    if (!isValidCodeFormat(manualCode)) {
+      toast('Formato codice non valido', 'err');
+      btn.disabled = false;
+      btn.textContent = 'Salva prodotto';
+      return;
+    }
+    if (codeExists(manualCode, id || null)) {
+      toast('Codice già esistente', 'err');
+      btn.disabled = false;
+      btn.textContent = 'Salva prodotto';
+      return;
+    }
+    finalCode = manualCode;
+  } else {
+    var prefix = resolveCodePrefix(model, collection);
+    if (prefix) {
+      finalCode = generateNextCode(prefix, id || null);
+      if (codeExists(finalCode, id || null)) {
+        toast('Codice già esistente, ricarica la pagina e riprova', 'err');
+        btn.disabled = false;
+        btn.textContent = 'Salva prodotto';
+        return;
+      }
+    }
   }
-
-  var finalCode = codeInput || autoCode || null;
 
   var yearRaw = document.getElementById('fyear').value.trim();
   var body = {
@@ -1111,10 +1224,6 @@ async function saveProd() {
   };
 
   try {
-    if (!body.code && getCodePrefix(model, collection)) {
-      body.code = generateNextCode(model, collection, id || null);
-    }
-
     if (id) {
       await PATCH(TP, id, body);
       toast('Prodotto aggiornato nel database', 'ok');
@@ -1132,6 +1241,10 @@ async function saveProd() {
   btn.textContent = 'Salva prodotto';
 }
 
+/* =========================
+   LISTE
+   ========================= */
+
 function renderLists() {
   function rend(cid, items, emptyLabel) {
     if (!items.length) {
@@ -1148,6 +1261,10 @@ function renderLists() {
   rend('lmod', mods, 'Nessun modello');
   rend('lcol', cols, 'Nessuna collezione');
 }
+
+/* =========================
+   STATISTICHE
+   ========================= */
 
 function renderSalesList(targetId, items, isMoney) {
   var el = document.getElementById(targetId);
@@ -1212,7 +1329,7 @@ function groupedRevenueByCombo(data) {
 }
 
 function renderSalesStats() {
-  var targetCollections = ['standard', 'splash', 'spiral', 'touch'];
+  var targetCollections = cols.slice();
 
   var svuotatascheItems = targetCollections.map(function(col) {
     return {
@@ -1269,10 +1386,10 @@ function renderSalesStats() {
   });
 
   var mainComboItems = [];
-  ['standard','splash','spiral','touch'].forEach(function(col){
+  cols.forEach(function(col){
     mainComboItems.push({ label: 'Svuotatasche ' + col.charAt(0).toUpperCase() + col.slice(1), value: revenueSoldBy('svuotatasche', col) });
   });
-  ['standard','splash','spiral','touch'].forEach(function(col){
+  cols.forEach(function(col){
     mainComboItems.push({ label: 'Posacenere ' + col.charAt(0).toUpperCase() + col.slice(1), value: revenueSoldBy('posacenere', col) });
   });
 
