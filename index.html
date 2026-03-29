@@ -397,6 +397,12 @@ tbody tr:hover td{background:var(--bg3)}
       <div class="fi"><label>Collezione</label><input id="fcollection" placeholder="Es. Standard / Splash / Candela"></div>
       <div class="fi full"><label>Immagine 1 (URL)</label><input id="fimg1" placeholder="https://..."><div class="hint">URL immagine copertina</div></div>
       <div class="fi full"><label>Immagine 2 (URL)</label><input id="fimg2" placeholder="https://..."><div class="hint">URL immagine secondaria</div></div>
+
+      <div class="fi full">
+        <label>Storia</label>
+        <textarea id="fstory" placeholder="Inserisci qui la storia del vinile, curiosità, contesto, significato..."></textarea>
+        <div class="hint">Questo testo viene salvato nella colonna story su Supabase.</div>
+      </div>
     </div>
     <div class="mfoot">
       <button type="button" class="bcancel" onclick="closeModal()">Annulla</button>
@@ -649,23 +655,6 @@ function rebuildDerivedLists() {
 /* =========================
    CODICI AUTOMATICI
    ========================= */
-
-/*
- Regole principali:
- - Svuotatasche + Standard -> S1 + progressivo  => S11, S12...
- - Svuotatasche + Splash   -> S2 + progressivo  => S21, S22...
- - Svuotatasche + Spiral   -> S3 + progressivo
- - Svuotatasche + Touch    -> S4 + progressivo
- - Posacenere + Standard   -> P1 + progressivo
- - Posacenere + Splash     -> P2 + progressivo
- - Posacenere + Spiral     -> P3 + progressivo
- - Posacenere + Touch      -> P4 + progressivo
- - Posacenere Soul         -> P5 + progressivo  => P51, P52...
- - Collezione Candela      -> C + progressivo   => C1, C2...
- Per nuove collezioni o modelli non previsti:
- - modello sconosciuto: usa la prima lettera del modello
- - collezione sconosciuta: usa il prossimo numero libero
-*/
 
 var BASE_MODEL_CODES = {
   'svuotatasche': 'S',
@@ -1145,6 +1134,7 @@ function openModal(prod) {
   document.getElementById('fcollection').value = prod ? (prod.collection || '') : '';
   document.getElementById('fimg1').value = prod ? (prod.image1 || '') : '';
   document.getElementById('fimg2').value = prod ? (prod.image2 || '') : '';
+  document.getElementById('fstory').value = prod ? (prod.story || '') : '';
   document.getElementById('ov').classList.add('open');
   setTimeout(function(){ document.getElementById('ftitle').focus(); }, 60);
 }
@@ -1220,7 +1210,8 @@ async function saveProd() {
     model: model,
     collection: collection,
     image1: document.getElementById('fimg1').value.trim() || null,
-    image2: document.getElementById('fimg2').value.trim() || null
+    image2: document.getElementById('fimg2').value.trim() || null,
+    story: document.getElementById('fstory').value.trim() || null
   };
 
   try {
