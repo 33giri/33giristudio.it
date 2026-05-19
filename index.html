@@ -334,11 +334,11 @@ tbody tr:hover td{background:var(--bg3)}
 
       <div class="sales-grid">
         <div class="sales-card">
-          <h4>Svuotatasche venduti</h4>
+          <h4>33 giri venduti</h4>
           <div id="sales-svuotatasche"></div>
         </div>
         <div class="sales-card">
-          <h4>Posacenere venduti</h4>
+          <h4>45 giri venduti</h4>
           <div id="sales-posacenere"></div>
         </div>
         <div class="sales-card">
@@ -381,7 +381,7 @@ tbody tr:hover td{background:var(--bg3)}
       <div class="fi">
         <label>Codice</label>
         <input id="fcode" placeholder="Es. S11 / P51 / C1">
-        <div class="hint">Se lo lasci vuoto, viene generato automaticamente. Esempi: Standard=S1, Splash=S2, Spiral=S3, Touch=S4, Soul=P5, Candela=C.</div>
+        <div class="hint">Se lo lasci vuoto, viene generato automaticamente. Esempi: 33 giri Standard=S1, 33 giri Splash=S2, 33 giri Spiral=S3, 33 giri Touch=S4, 45 giri Soul=P5, Candela=C.</div>
       </div>
 
       <div class="fi">
@@ -393,7 +393,7 @@ tbody tr:hover td{background:var(--bg3)}
       <div class="fi"><label>Artista</label><input id="fartist" placeholder="Nome artista"></div>
       <div class="fi"><label>Genere</label><input id="fgenre" placeholder="Rock, Jazz, Pop..."></div>
       <div class="fi"><label>Luogo</label><input id="fplace" placeholder="Città o paese"></div>
-      <div class="fi"><label>Modello</label><input id="fmodel" placeholder="Es. Svuotatasche / Posacenere / Posacenere Soul"></div>
+      <div class="fi"><label>Modello</label><input id="fmodel" placeholder="Es. 33 giri / 45 giri / 45 giri Soul"></div>
       <div class="fi"><label>Collezione</label><input id="fcollection" placeholder="Es. Standard / Splash / Candela"></div>
       <div class="fi full"><label>Immagine 1 (URL)</label><input id="fimg1" placeholder="https://..."><div class="hint">URL immagine copertina</div></div>
       <div class="fi full"><label>Immagine 2 (URL)</label><input id="fimg2" placeholder="https://..."><div class="hint">URL immagine secondaria</div></div>
@@ -653,12 +653,90 @@ function rebuildDerivedLists() {
 }
 
 /* =========================
+   NORMALIZZAZIONE NOMI
+   - Tutti i modelli e collezioni in minuscolo
+   - svuotatasche -> 33 giri
+   - posacenere -> 45 giri
+   - "33 Giri" / "45 GIRI" diventano "33 giri" / "45 giri"
+   ========================= */
+
+function normalizeModelName(value) {
+  if (value === null || value === undefined) return null;
+  var t = String(value).trim();
+  if (!t) return null;
+  var s = t.toLowerCase();
+  // Migrazione vecchi nomi
+  s = s.replace(/\bsvuotatasche\b/g, '33 giri');
+  s = s.replace(/\bposacenere\b/g, '45 giri');
+  // Spazi multipli compressi
+  s = s.replace(/\s+/g, ' ').trim();
+  return s || null;
+}
+
+function normalizeCollectionName(value) {
+  if (value === null || value === undefined) return null;
+  var t = String(value).trim();
+  if (!t) return null;
+  return t.toLowerCase().replace(/\s+/g, ' ');
+}
+
+var isNormalizingValues = false;
+
+async function ensureNormalizedValues() {
+  if (isNormalizingValues) return false;
+  isNormalizingValues = true;
+  try {
+    var all = avail.concat(sold);
+    var updates = [];
+
+    all.forEach(function(p) {
+      var body = {};
+      var changed = false;
+
+      if (p.model !== null && p.model !== undefined) {
+        var nm = normalizeModelName(p.model);
+        if (nm !== p.model) {
+          body.model = nm;
+          changed = true;
+        }
+      }
+
+      if (p.collection !== null && p.collection !== undefined) {
+        var nc = normalizeCollectionName(p.collection);
+        if (nc !== p.collection) {
+          body.collection = nc;
+          changed = true;
+        }
+      }
+
+      if (changed) updates.push({ id: p.id, body: body });
+    });
+
+    if (!updates.length) {
+      isNormalizingValues = false;
+      return false;
+    }
+
+    for (var i = 0; i < updates.length; i++) {
+      await PATCH(TP, updates[i].id, updates[i].body);
+    }
+
+    isNormalizingValues = false;
+    return true;
+  } catch (err) {
+    isNormalizingValues = false;
+    toast('Errore normalizzazione: ' + err.message, 'err');
+    return false;
+  }
+}
+
+/* =========================
    CODICI AUTOMATICI
    ========================= */
 
 var BASE_MODEL_CODES = {
-  'svuotatasche': 'S',
-  'posacenere': 'P',
+  '33 giri': 'S',
+  '45 giri': 'P',
   'candela': 'C'
 };
 
@@ -678,7 +756,7 @@ var SPECIAL_PREFIX_RULES = [
   },
   {
     type: 'model',
-    match: ['posacenere soul', 'soul posacenere'],
+    match: ['45 giri soul', 'soul 45 giri'],
     prefix: 'P5'
   }
 ];
@@ -708,9 +786,12 @@ function getBaseModelCode(model) {
 
   if (BASE_MODEL_CODES[m]) return BASE_MODEL_CODES[m];
 
+  if (m.indexOf('33 giri') >= 0) return 'S';
+  if (m.indexOf('45 giri') >= 0) return 'P';
+  if (m.indexOf('candela') >= 0) return 'C';
+  // Retrocompatibilità: vecchi nomi (verranno comunque migrati a 33 giri / 45 giri)
   if (m.indexOf('svuot') >= 0) return 'S';
   if (m.indexOf('posacen') >= 0) return 'P';
-  if (m.indexOf('candela') >= 0) return 'C';
 
   var cleaned = m.replace(/[^a-z0-9 ]/g, ' ').trim();
   if (!cleaned) return '';
@@ -885,7 +966,7 @@ async function ensureCodesForExistingProducts() {
    LOAD
    ========================= */
 
-async function loadProds(skipCodeBackfill) {
+async function loadProds(skipBackfill) {
   try {
     var data = await GET(TP, 'select=*&sold_at=is.null&order=created_at.desc');
     avail = data || [];
@@ -895,7 +976,12 @@ async function loadProds(skipCodeBackfill) {
 
     rebuildDerivedLists();
 
-    if (!skipCodeBackfill) {
+    if (!skipBackfill) {
+      // 1) Normalizza nomi (lowercase + svuotatasche->33 giri, posacenere->45 giri)
+      var normalized = await ensureNormalizedValues();
+      if (normalized) return await loadProds(false);
+
+      // 2) Genera codici mancanti
       var changed = await ensureCodesForExistingProducts();
       if (changed) return await loadProds(true);
     }
@@ -1167,8 +1253,8 @@ async function saveProd() {
   btn.disabled = true;
   btn.textContent = 'Salvataggio...';
 
-  var model = document.getElementById('fmodel').value.trim() || null;
-  var collection = document.getElementById('fcollection').value.trim() || null;
+  var model = normalizeModelName(document.getElementById('fmodel').value);
+  var collection = normalizeCollectionName(document.getElementById('fcollection').value);
   var manualCode = sanitizeCode(document.getElementById('fcode').value);
   var finalCode = null;
 
@@ -1322,17 +1408,17 @@ function groupedRevenueByCombo(data) {
 function renderSalesStats() {
   var targetCollections = cols.slice();
 
-  var svuotatascheItems = targetCollections.map(function(col) {
+  var items33 = targetCollections.map(function(col) {
     return {
-      label: 'Svuotatasche ' + col.charAt(0).toUpperCase() + col.slice(1),
-      value: countSoldBy('svuotatasche', col)
+      label: '33 giri ' + col,
+      value: countSoldBy('33 giri', col)
     };
   });
 
-  var posacenereItems = targetCollections.map(function(col) {
+  var items45 = targetCollections.map(function(col) {
     return {
-      label: 'Posacenere ' + col.charAt(0).toUpperCase() + col.slice(1),
-      value: countSoldBy('posacenere', col)
+      label: '45 giri ' + col,
+      value: countSoldBy('45 giri', col)
     };
   });
 
@@ -1346,8 +1432,8 @@ function renderSalesStats() {
     return { label: k, value: soldByCollection[k] };
   });
 
-  renderSalesList('sales-svuotatasche', svuotatascheItems, false);
-  renderSalesList('sales-posacenere', posacenereItems, false);
+  renderSalesList('sales-svuotatasche', items33, false);
+  renderSalesList('sales-posacenere', items45, false);
   renderSalesList('sales-model-totals', modelItems, false);
   renderSalesList('sales-collection-totals', collectionItems, false);
 
@@ -1378,10 +1464,10 @@ function renderSalesStats() {
 
   var mainComboItems = [];
   cols.forEach(function(col){
-    mainComboItems.push({ label: 'Svuotatasche ' + col.charAt(0).toUpperCase() + col.slice(1), value: revenueSoldBy('svuotatasche', col) });
+    mainComboItems.push({ label: '33 giri ' + col, value: revenueSoldBy('33 giri', col) });
   });
   cols.forEach(function(col){
-    mainComboItems.push({ label: 'Posacenere ' + col.charAt(0).toUpperCase() + col.slice(1), value: revenueSoldBy('posacenere', col) });
+    mainComboItems.push({ label: '45 giri ' + col, value: revenueSoldBy('45 giri', col) });
   });
 
   renderSalesList('revenue-model-totals', revenueModelItems, true);
